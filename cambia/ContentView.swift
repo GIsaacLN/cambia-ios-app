@@ -6,16 +6,30 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct ContentView: View {
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        TabView {
+            Tab("Metricas", systemImage: "play") {
+                MetricsView()
+            }
+            Tab("Simulación", systemImage: "books.vertical") {
+                //LibraryView()
+            }
+            Tab("Reportes", systemImage: "play") {
+                //WatchNowView()
+            }
+            Tab("Ajustes", systemImage: "books.vertical") {
+                //LibraryView()
+            }
+            Tab(role: .search) {
+//                SearchView()
+            }
+
+        }.tabViewStyle(.sidebarAdaptable)
+            .preferredColorScheme(.dark)
     }
 }
 
