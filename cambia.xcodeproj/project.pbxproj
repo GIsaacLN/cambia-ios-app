@@ -10,9 +10,22 @@
 		EC99A82F2CB482DD008F41F7 /* cambia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cambia.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		78D97D712CB8474700A57C44 /* Exceptions for "cambia" folder in "cambia" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EC99A82E2CB482DD008F41F7 /* cambia */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EC99A8312CB482DD008F41F7 /* cambia */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				78D97D712CB8474700A57C44 /* Exceptions for "cambia" folder in "cambia" target */,
+			);
 			path = cambia;
 			sourceTree = "<group>";
 		};
@@ -255,7 +268,9 @@
 				DEVELOPMENT_TEAM = SFL626YUT9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = cambia/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Cambia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -290,7 +305,9 @@
 				DEVELOPMENT_TEAM = SFL626YUT9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = cambia/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Cambia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

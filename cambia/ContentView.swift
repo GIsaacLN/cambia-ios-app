@@ -28,7 +28,7 @@ struct ContentView: View {
 //                SearchView()
             }
 
-        }.tabViewStyle(.sidebarAdaptable)
+        }.tabViewStyle(.tabBarOnly)
             .preferredColorScheme(.dark)
     }
 }
