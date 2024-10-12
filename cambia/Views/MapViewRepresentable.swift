@@ -9,23 +9,16 @@ import SwiftUI
 import MapKit
 
 struct MapViewRepresentable: UIViewRepresentable {
-    @Binding var overlays: [StyledPolygon]
-    @Binding var region: MKCoordinateRegion
-    @Binding var annotations: [MKAnnotation]
+    @ObservedObject var viewModel: MapViewModel
     
-    @Binding var zoomIn: Bool
-    @Binding var zoomOut: Bool
-    @Binding var showUserLocation: Bool
-    @Binding var togglePitch: Bool
-
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         context.coordinator.mapView = mapView
         
-        mapView.setRegion(region, animated: false)
-        mapView.addOverlays(overlays)
-        mapView.addAnnotations(annotations)
+        mapView.setRegion(viewModel.region, animated: false)
+        mapView.addOverlays(viewModel.overlays)
+        mapView.addAnnotations(viewModel.annotations)
         
         // Enable user location
         mapView.showsUserLocation = true
@@ -41,62 +34,62 @@ struct MapViewRepresentable: UIViewRepresentable {
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         // Update overlays
-        if mapView.overlays.count != overlays.count {
+        if mapView.overlays.count != viewModel.overlays.count {
             mapView.removeOverlays(mapView.overlays)
-            mapView.addOverlays(overlays)
+            mapView.addOverlays(viewModel.overlays)
         }
         
         // Update region
-        if mapView.region.center.latitude != region.center.latitude ||
-            mapView.region.center.longitude != region.center.longitude ||
-            mapView.region.span.latitudeDelta != region.span.latitudeDelta ||
-            mapView.region.span.longitudeDelta != region.span.longitudeDelta {
-            mapView.setRegion(region, animated: true)
+        if mapView.region.center.latitude != viewModel.region.center.latitude ||
+            mapView.region.center.longitude != viewModel.region.center.longitude ||
+            mapView.region.span.latitudeDelta != viewModel.region.span.latitudeDelta ||
+            mapView.region.span.longitudeDelta != viewModel.region.span.longitudeDelta {
+            mapView.setRegion(viewModel.region, animated: true)
         }
         
         // Update annotations
-        if mapView.annotations.count != annotations.count {
+        if mapView.annotations.count != viewModel.annotations.count {
             mapView.removeAnnotations(mapView.annotations)
-            mapView.addAnnotations(annotations)
+            mapView.addAnnotations(viewModel.annotations)
         }
         
         // Handle zoom in
-        if zoomIn {
+        if viewModel.zoomInTrigger {
             var newRegion = mapView.region
             newRegion.span.latitudeDelta /= 2.0
             newRegion.span.longitudeDelta /= 2.0
             mapView.setRegion(newRegion, animated: true)
             DispatchQueue.main.async {
-                self.zoomIn = false
+                self.viewModel.zoomInTrigger = false
             }
         }
         
         // Handle zoom out
-        if zoomOut {
+        if viewModel.zoomOutTrigger {
             var newRegion = mapView.region
             newRegion.span.latitudeDelta *= 2.0
             newRegion.span.longitudeDelta *= 2.0
             mapView.setRegion(newRegion, animated: true)
             DispatchQueue.main.async {
-                self.zoomOut = false
+                self.viewModel.zoomOutTrigger = false
             }
         }
         
         // Handle pitch toggle
-        if togglePitch {
+        if viewModel.togglePitchTrigger {
             let camera = mapView.camera
             camera.pitch = camera.pitch == 0 ? 60 : 0
             mapView.setCamera(camera, animated: true)
             DispatchQueue.main.async {
-                self.togglePitch = false
+                self.viewModel.togglePitchTrigger = false
             }
         }
         
         // Handle user location
-        if showUserLocation {
+        if viewModel.showUserLocationTrigger {
             mapView.setUserTrackingMode(.follow, animated: true)
             DispatchQueue.main.async {
-                self.showUserLocation = false
+                self.viewModel.showUserLocationTrigger = false
             }
         }
     }
@@ -126,10 +119,18 @@ struct MapViewRepresentable: UIViewRepresentable {
             return MKOverlayRenderer(overlay: overlay)
         }
         
+        func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+            if let location = userLocation.location {
+                DispatchQueue.main.async {
+                    self.parent.viewModel.userLocation = location
+                }
+            }
+        }
+        
         // Handle region changes
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             DispatchQueue.main.async {
-                self.parent.region = mapView.region
+                self.parent.viewModel.region = mapView.region
             }
         }
     }

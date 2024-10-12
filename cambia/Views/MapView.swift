@@ -5,32 +5,20 @@
 //  Created by Gustavo Isaac Lopez Nunez on 11/10/24.
 //
 
+// Views/MapView.swift
+
 import SwiftUI
 import MapKit
 
 struct MapView: View {
-    // MARK: - Bindings
-    @Binding var overlays: [StyledPolygon]
-    @Binding var region: MKCoordinateRegion
-    @Binding var annotations: [MKAnnotation]
-    
-    // Action triggers
-    @Binding var zoomInTrigger: Bool
-    @Binding var zoomOutTrigger: Bool
-    @Binding var showUserLocationTrigger: Bool
-    @Binding var togglePitchTrigger: Bool
-    
+    // MARK: - Observed Object
+    @ObservedObject var viewModel: MapViewModel
+
     // MARK: - Body
     var body: some View {
         ZStack {
             MapViewRepresentable(
-                overlays: $overlays,
-                region: $region,
-                annotations: $annotations,
-                zoomIn: $zoomInTrigger,
-                zoomOut: $zoomOutTrigger,
-                showUserLocation: $showUserLocationTrigger,
-                togglePitch: $togglePitchTrigger
+                viewModel: viewModel
             )
             VStack {
                 HStack {
@@ -38,7 +26,7 @@ struct MapView: View {
                     VStack {
                         // MapPitchToggle
                         Button(action: {
-                            togglePitchTrigger = true
+                            viewModel.togglePitchTrigger = true
                         }) {
                             Image(systemName: "cube")
                                 .frame(width: 44, height: 44)
@@ -48,7 +36,7 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            showUserLocationTrigger = true
+                            viewModel.showUserLocationTrigger = true
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)
@@ -58,18 +46,31 @@ struct MapView: View {
                         }
                         // Zoom buttons
                         ZoomButtonView(zoomIn: true) {
-                            zoomInTrigger = true
+                            viewModel.zoomInTrigger = true
                         }
                         ZoomButtonView(zoomIn: false) {
-                            zoomOutTrigger = true
+                            viewModel.zoomOutTrigger = true
                         }
-                        // Additional buttons can be added here
+                        // Layer Selection Button
+                        Button(action: {
+                            viewModel.showLayerSelection.toggle()
+                        }) {
+                            Image(systemName: "map")
+                                .frame(width: 44, height: 44)
+                                .background(Color("gray5"))
+                                .foregroundStyle(.white)
+                                .cornerRadius(10)
+                        }
                     }
                     .accentColor(.white)
                     .padding([.bottom, .trailing, .top], 16)
                 }
                 Spacer()
                 // MapScaleView can be added here if needed
+            }
+            // Layer Selection Sheet
+            if viewModel.showLayerSelection {
+                LayerSelectionView(viewModel: viewModel)
             }
         }
     }
@@ -103,5 +104,48 @@ struct MapButtonView: View {
                 .cornerRadius(10)
         }
         .padding(.top, 4)
+    }
+}
+
+struct LayerSelectionView: View {
+    @ObservedObject var viewModel: MapViewModel
+
+    var body: some View {
+        VStack {
+            Text("Select Layers")
+                .font(.headline)
+                .padding()
+            List {
+                ForEach(viewModel.availableLayers) { layer in
+                    Button(action: {
+                        viewModel.toggleLayer(layer)
+                    }) {
+                        HStack {
+                            Text(layer.name)
+                            Spacer()
+                            if viewModel.selectedLayers.contains(layer) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                }
+            }
+            Button(action: {
+                viewModel.showLayerSelection = false
+            }) {
+                Text("Done")
+                    .bold()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color("gray5"))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding()
+        }
+        .background(Color.white)
+        .cornerRadius(10)
+        .padding()
     }
 }

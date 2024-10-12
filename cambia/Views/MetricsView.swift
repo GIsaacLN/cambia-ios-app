@@ -5,27 +5,33 @@
 //  Created by yatziri on 07/10/24.
 //
 
-// Views/MetricsView.swift
-
 import SwiftUI
 
 struct MetricsView: View {
-    @StateObject private var viewModel = MetricsViewModel()
+    @StateObject private var mapViewModel = MapViewModel()
+    @StateObject private var metricsViewModel: MetricsViewModel
+    
+    init() {
+        let mapVM = MapViewModel()
+        _mapViewModel = StateObject(wrappedValue: mapVM)
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+    }
     
     var body: some View {
         HStack {
-            Grid {
-                GridRow {
+            VStack {
+                Text("Metrics")
+                    .font(.title3)
+                    .bold()
+                Divider()
+                
+                if mapViewModel.selectedLayers.contains(where: { $0.name == "Hospitals" }) {
                     VStack {
-                        Text("Escuelas")
-                            .font(.title3)
-                            .bold()
-                        Divider()
                         HStack {
-                            Text("Escuela más cercana:")
+                            Text("Nearest Hospital Distance:")
                                 .font(.caption)
                             Spacer()
-                            Text("2")
+                            Text(String(format: "%.2f", metricsViewModel.nearestHospitalDistance))
                                 .foregroundStyle(Color.orange)
                                 .font(.title)
                                 .bold()
@@ -34,53 +40,38 @@ struct MetricsView: View {
                         }
                         Divider()
                         HStack {
-                            Text("Tiempo de desplazamiento:")
+                            Text("Number of Hospitals in Radius:")
                                 .font(.caption)
                             Spacer()
-                            Text("15")
-                                .foregroundStyle(Color.orange)
-                                .font(.title)
-                                .bold()
-                            Text("minutos")
-                                .font(.caption)
-                        }
-                        Divider()
-                        HStack {
-                            Text("No. en un radio de")
-                                .font(.caption)
-                            Text("Km")
-                                .font(.caption)
-                            Spacer()
-                            Text("5")
+                            Text("\(metricsViewModel.numberOfHospitalsInRadius)")
                                 .foregroundStyle(Color.orange)
                                 .font(.title)
                                 .bold()
                         }
                     }
-                    .padding()
-                    .background(Color.gray6)
-                    .cornerRadius(20)
-                    .opacity(0.7)
-
-                    Text("R1, C1")
-                    Text("R1, C2")
                 }
-                Text("R1, C1")
-                Text("R1, C2")
+                
+                if mapViewModel.selectedLayers.contains(where: { $0.name == "Flood Zones" }) {
+                    VStack {
+                        HStack {
+                            Text("Flood Zone Info:")
+                                .font(.caption)
+                            Spacer()
+                            Text(metricsViewModel.floodZoneInfo)
+                                .foregroundStyle(Color.orange)
+                                .font(.title)
+                                .bold()
+                        }
+                    }
+                }
+                // Add more metrics for other layers as needed
+                
             }
-            mapView
+            .padding()
+            .background(Color.gray6)
+            .cornerRadius(20)
+            .opacity(0.7)
+            MapView(viewModel: mapViewModel)
         }
-    }
-
-    var mapView: some View {
-        MapView(
-            overlays: $viewModel.overlays,
-            region: $viewModel.region,
-            annotations: $viewModel.annotations,
-            zoomInTrigger: $viewModel.zoomInTrigger,
-            zoomOutTrigger: $viewModel.zoomOutTrigger,
-            showUserLocationTrigger: $viewModel.showUserLocationTrigger,
-            togglePitchTrigger: $viewModel.togglePitchTrigger
-        )
     }
 }

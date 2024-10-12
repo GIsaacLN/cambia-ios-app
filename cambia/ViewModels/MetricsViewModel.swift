@@ -5,115 +5,102 @@
 //  Created by Gustavo Isaac Lopez Nunez on 11/10/24.
 //
 
+// ViewModels/MetricsViewModel.swift
+
 import SwiftUI
 import MapKit
+import Combine
 
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
-    @Published var overlays: [StyledPolygon] = []
-    @Published var region: MKCoordinateRegion
-    @Published var annotations: [MKAnnotation] = []
+    @Published var nearestHospitalDistance: Double = 0.0
+    @Published var travelTimeToNearestHospital: Int = 0
+    @Published var numberOfHospitalsInRadius: Int = 0
+    @Published var floodZoneInfo: String = ""
     
-    // Action triggers
-    @Published var zoomInTrigger: Bool = false
-    @Published var zoomOutTrigger: Bool = false
-    @Published var showUserLocationTrigger: Bool = false
-    @Published var togglePitchTrigger: Bool = false
+    // Reference to MapViewModel to access map data
+    private var mapViewModel: MapViewModel
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init() {
-        // Initialize the default region (Ciudad de México)
-        self.region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 19.4326, longitude: -99.1332),
-            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-        )
+    init(mapViewModel: MapViewModel) {
+        self.mapViewModel = mapViewModel
         
-        // Load overlays
-        loadOverlays()
+        // Observe changes in selected layers
+        mapViewModel.$selectedLayers
+            .sink { [weak self] _ in
+                self?.updateMetrics()
+            }
+            .store(in: &cancellables)
+        
+        // Observe changes in annotations and overlays
+        mapViewModel.$annotations
+            .sink { [weak self] _ in
+                self?.updateMetrics()
+            }
+            .store(in: &cancellables)
+        
+        mapViewModel.$overlays
+            .sink { [weak self] _ in
+                self?.updateMetrics()
+            }
+            .store(in: &cancellables)
+        
+        // Observe changes in user location
+        mapViewModel.$userLocation
+            .sink { [weak self] _ in
+                self?.updateMetrics()
+            }
+            .store(in: &cancellables)
     }
     
-    // MARK: - Overlay Loading
-    func loadOverlays() {
-        guard let jsonUrl = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") else {
-            print("GeoJSON file not found")
-            return
-        }
+    // MARK: - Metrics Calculation
+    func updateMetrics() {
+        // Reset metrics
+        nearestHospitalDistance = 0.0
+        numberOfHospitalsInRadius = 0
+        floodZoneInfo = ""
         
-        do {
-            let jsonData = try Data(contentsOf: jsonUrl)
-            let decoder = MKGeoJSONDecoder()
-            let geoJSONObjects = try decoder.decode(jsonData)
-            parseGeoJSON(geoJSONObjects)
-        } catch {
-            print("Error loading GeoJSON: \(error)")
-        }
-    }
-    
-    private func parseGeoJSON(_ geoJSONObjects: [MKGeoJSONObject]) {
-        for object in geoJSONObjects {
-            if let feature = object as? MKGeoJSONFeature {
-                var fillColor: UIColor = UIColor.red.withAlphaComponent(0.5)
-                var strokeColor: UIColor = UIColor.blue
-                var lineWidth: CGFloat = 2.0
-
-                // Extract properties if needed
-                if let propertiesData = feature.properties,
-                   let properties = try? JSONSerialization.jsonObject(with: propertiesData, options: []) as? [String: Any] {
-
-                    // Example: Change color based on a property
-                    if let dangerLevel = properties["PELIGRO_IN"] as? String {
-                        switch dangerLevel {
-                        case "Muy bajo":
-                            fillColor = UIColor.green.withAlphaComponent(0.5)
-                        case "Bajo":
-                            fillColor = UIColor.yellow.withAlphaComponent(0.5)
-                        case "Medio":
-                            fillColor = UIColor.orange.withAlphaComponent(0.5)
-                        case "Alto":
-                            fillColor = UIColor.red.withAlphaComponent(0.5)
-                        default:
-                            fillColor = UIColor.gray.withAlphaComponent(0.5)
-                        }
-                    }
+        guard let userLocation = mapViewModel.userLocation else { return }
+        let userCoordinate = userLocation.coordinate
+        
+        // Hospitals Layer Metrics
+        if let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
+           mapViewModel.selectedLayers.contains(hospitalLayer),
+           let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id] {
+            
+            numberOfHospitalsInRadius = hospitalAnnotations.count
+            
+            // Calculate nearest hospital distance
+            var minDistance: CLLocationDistance = Double.greatestFiniteMagnitude
+            for annotation in hospitalAnnotations {
+                let annotationLocation = CLLocation(latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude)
+                let distance = userLocation.distance(from: annotationLocation)
+                if distance < minDistance {
+                    minDistance = distance
                 }
-
-                for geometry in feature.geometry {
-                    if let polygon = geometry as? MKPolygon {
-                        // Create a StyledPolygon with the styling information
-                        let styledPolygon = StyledPolygon(points: polygon.points(), count: polygon.pointCount)
-                        styledPolygon.fillColor = fillColor
-                        styledPolygon.strokeColor = strokeColor
-                        styledPolygon.lineWidth = lineWidth
-
-                        DispatchQueue.main.async {
-                            self.overlays.append(styledPolygon)
-                        }
+            }
+            nearestHospitalDistance = minDistance / 1000.0 // Convert to kilometers
+        }
+        
+        // Flood Zones Layer Metrics
+        if let floodLayer = mapViewModel.availableLayers.first(where: { $0.name == "Flood Zones" }),
+           mapViewModel.selectedLayers.contains(floodLayer),
+           let floodOverlays = mapViewModel.layerOverlays[floodLayer.id] {
+            
+            let mapPoint = MKMapPoint(userCoordinate)
+            var isInFloodZone = false
+            for overlay in floodOverlays {
+                if let polygon = overlay as? MKPolygon {
+                    if polygon.contains(coordinate: userCoordinate) {
+                        isInFloodZone = true
+                        break
                     }
                 }
             }
+            floodZoneInfo = isInFloodZone ? "You are in a flood zone" : "You are not in a flood zone"
         }
     }
+
     
-    // MARK: - Search Functionality
-    func search(for query: String) {
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        request.resultTypes = .pointOfInterest
-        request.region = region // Use the current region
-        
-        Task {
-            let search = MKLocalSearch(request: request)
-            let response = try? await search.start()
-            DispatchQueue.main.async {
-                if let items = response?.mapItems {
-                    self.annotations = items.map { item in
-                        let annotation = MKPointAnnotation()
-                        annotation.coordinate = item.placemark.coordinate
-                        annotation.title = item.name
-                        return annotation
-                    }
-                }
-            }
-        }
-    }
 }
