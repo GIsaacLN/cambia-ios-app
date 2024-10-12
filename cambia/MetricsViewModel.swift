@@ -12,7 +12,7 @@ class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var overlays: [StyledPolygon] = []
     @Published var region: MKCoordinateRegion
-    @Published var searchResults: [MKMapItem] = []
+    @Published var annotations: [MKAnnotation] = []
     
     // Action triggers
     @Published var zoomInTrigger: Bool = false
@@ -105,23 +105,15 @@ class MetricsViewModel: ObservableObject {
             let search = MKLocalSearch(request: request)
             let response = try? await search.start()
             DispatchQueue.main.async {
-                self.searchResults = response?.mapItems ?? []
+                if let items = response?.mapItems {
+                    self.annotations = items.map { item in
+                        let annotation = MKPointAnnotation()
+                        annotation.coordinate = item.placemark.coordinate
+                        annotation.title = item.name
+                        return annotation
+                    }
+                }
             }
         }
-    }
-    
-    // MARK: - Map Actions
-    func performZoomIn() {
-        var newRegion = region
-        newRegion.span.latitudeDelta /= 2.0
-        newRegion.span.longitudeDelta /= 2.0
-        region = newRegion
-    }
-    
-    func performZoomOut() {
-        var newRegion = region
-        newRegion.span.latitudeDelta *= 2.0
-        newRegion.span.longitudeDelta *= 2.0
-        region = newRegion
     }
 }

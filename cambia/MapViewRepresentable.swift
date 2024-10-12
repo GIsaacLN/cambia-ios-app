@@ -11,7 +11,7 @@ import MapKit
 struct MapViewRepresentable: UIViewRepresentable {
     @Binding var overlays: [StyledPolygon]
     @Binding var region: MKCoordinateRegion
-    @Binding var searchResults: [MKMapItem]
+    @Binding var annotations: [MKAnnotation]
     
     @Binding var zoomIn: Bool
     @Binding var zoomOut: Bool
@@ -25,6 +25,7 @@ struct MapViewRepresentable: UIViewRepresentable {
         
         mapView.setRegion(region, animated: false)
         mapView.addOverlays(overlays)
+        mapView.addAnnotations(annotations)
         
         // Enable user location
         mapView.showsUserLocation = true
@@ -54,14 +55,10 @@ struct MapViewRepresentable: UIViewRepresentable {
         }
         
         // Update annotations
-        mapView.removeAnnotations(mapView.annotations)
-        let annotations = searchResults.map { item -> MKPointAnnotation in
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = item.placemark.coordinate
-            annotation.title = item.name
-            return annotation
+        if mapView.annotations.count != annotations.count {
+            mapView.removeAnnotations(mapView.annotations)
+            mapView.addAnnotations(annotations)
         }
-        mapView.addAnnotations(annotations)
         
         // Handle zoom in
         if zoomIn {
@@ -125,6 +122,7 @@ struct MapViewRepresentable: UIViewRepresentable {
                 renderer.lineWidth = polygon.lineWidth
                 return renderer
             }
+            // Handle other overlay types if needed
             return MKOverlayRenderer(overlay: overlay)
         }
         
