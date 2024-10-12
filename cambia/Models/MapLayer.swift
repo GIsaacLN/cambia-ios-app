@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import MapKit
 
 struct MapLayer: Identifiable, Equatable {
     let id = UUID()
@@ -20,14 +19,5 @@ struct MapLayer: Identifiable, Equatable {
 
     static func == (lhs: MapLayer, rhs: MapLayer) -> Bool {
         return lhs.id == rhs.id
-    }
-}
-
-extension MKPolygon {
-    func contains(coordinate: CLLocationCoordinate2D) -> Bool {
-        let renderer = MKPolygonRenderer(polygon: self)
-        let mapPoint = MKMapPoint(coordinate)
-        let point = renderer.point(for: mapPoint)
-        return renderer.path.contains(point)
     }
 }
