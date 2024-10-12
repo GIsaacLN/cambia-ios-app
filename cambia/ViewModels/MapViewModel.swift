@@ -124,14 +124,12 @@ class MapViewModel: ObservableObject {
         for object in geoJSONObjects {
             if let feature = object as? MKGeoJSONFeature {
                 var fillColor: UIColor = UIColor.red.withAlphaComponent(0.5)
-                var strokeColor: UIColor = UIColor.blue
-                var lineWidth: CGFloat = 2.0
+                let strokeColor: UIColor = UIColor.blue
+                let lineWidth: CGFloat = 2.0
 
                 // Extract properties if needed
                 if let propertiesData = feature.properties,
                    let properties = try? JSONSerialization.jsonObject(with: propertiesData, options: []) as? [String: Any] {
-
-                    // Example: Change color based on a property
                     if let dangerLevel = properties["PELIGRO_IN"] as? String {
                         switch dangerLevel {
                         case "Muy bajo":
@@ -142,26 +140,39 @@ class MapViewModel: ObservableObject {
                             fillColor = UIColor.orange.withAlphaComponent(0.5)
                         case "Alto":
                             fillColor = UIColor.red.withAlphaComponent(0.5)
+                        case "Muy alto":
+                            fillColor = UIColor.black.withAlphaComponent(0.5)
                         default:
                             fillColor = UIColor.gray.withAlphaComponent(0.5)
                         }
                     }
                 }
 
+                // Process geometries
                 for geometry in feature.geometry {
                     if let polygon = geometry as? MKPolygon {
-                        // Create a StyledPolygon with the styling information
                         let styledPolygon = StyledPolygon(points: polygon.points(), count: polygon.pointCount)
                         styledPolygon.fillColor = fillColor
                         styledPolygon.strokeColor = strokeColor
                         styledPolygon.lineWidth = lineWidth
-
                         overlays.append(styledPolygon)
+                    } else if let multiPolygon = geometry as? MKMultiPolygon {
+                        // Handle MKMultiPolygon by creating multiple MKPolygon overlays
+                        for subPolygon in multiPolygon.polygons {
+                            let styledPolygon = StyledPolygon(points: subPolygon.points(), count: subPolygon.pointCount)
+                            styledPolygon.fillColor = fillColor
+                            styledPolygon.strokeColor = strokeColor
+                            styledPolygon.lineWidth = lineWidth
+                            overlays.append(styledPolygon)
+                        }
+                    } else if let polyline = geometry as? MKPolyline {
+                        overlays.append(polyline)
+                    } else {
+                        print("Unsupported geometry type: \(type(of: geometry))")
                     }
                 }
             }
         }
-
         return overlays
     }
 

@@ -114,11 +114,17 @@ struct MapViewRepresentable: UIViewRepresentable {
                 renderer.strokeColor = polygon.strokeColor
                 renderer.lineWidth = polygon.lineWidth
                 return renderer
+            } else if let polyline = overlay as? MKPolyline {
+                let renderer = MKPolylineRenderer(polyline: polyline)
+                renderer.strokeColor = UIColor.blue
+                renderer.lineWidth = 2.0
+                return renderer
+            } else {
+                print("Unhandled overlay type: \(type(of: overlay))")
+                return MKOverlayRenderer(overlay: overlay)
             }
-            // Handle other overlay types if needed
-            return MKOverlayRenderer(overlay: overlay)
         }
-        
+
         func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
             if let location = userLocation.location {
                 DispatchQueue.main.async {
