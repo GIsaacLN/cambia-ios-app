@@ -4,6 +4,7 @@
 
 #Ignores JSON files because they're too heavy.
 *.json
+cambia/*.json
 
 ## User settings
 xcuserdata/
