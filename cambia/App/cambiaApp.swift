@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct cambiaApp: App {
+    
+    var viewModel = CiudadMunicipioViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().environmentObject(viewModel)
         }
+        
     }
 }

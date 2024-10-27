@@ -15,7 +15,7 @@ struct SearchView: View {
     @State private var filteredCities: [Ciudad] = []
     @State private var filteredMunicipios: [Municipio] = []
     
-    @StateObject var viewModel = CiudadMunicipioViewModel()
+    @EnvironmentObject var viewModel : CiudadMunicipioViewModel
     
     var body: some View {
         Text("\(viewModel.selectedCiudadMunicipio)")

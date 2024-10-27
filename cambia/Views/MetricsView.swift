@@ -20,7 +20,7 @@ struct MetricsView: View {
     
     @ObservedObject var errorDelegate = InegiDataDelegate()
     
-    @StateObject var viewModel = CiudadMunicipioViewModel()
+    @EnvironmentObject var viewModel : CiudadMunicipioViewModel
     
     
     // Definimos el formateador de números

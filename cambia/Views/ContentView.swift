@@ -9,8 +9,7 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    
-    @ObservedObject var viewModel = CiudadMunicipioViewModel()
+    @EnvironmentObject var viewModel: CiudadMunicipioViewModel
    
     var body: some View {
         NavigationStack{
@@ -30,7 +29,8 @@ struct ContentView: View {
                  //LibraryView()
                  }*/
                 Tab(role: .search) {
-                    SearchView(viewModel: viewModel)
+                    SearchView()
+                    //SearchView(viewModel: viewModel)
                 }
                 
             }.tabViewStyle(.tabBarOnly)
@@ -38,7 +38,7 @@ struct ContentView: View {
                 .navigationTitle(            viewModel.textselectedCiudadMunicipio(for: viewModel.selectedCiudadMunicipio.ciudad, to: viewModel.selectedCiudadMunicipio.municipios))
                 .navigationBarTitleDisplayMode(.inline)
         }
-        
+       // .environmentObject(viewModel)
     }
 }
 
