@@ -46,18 +46,33 @@ struct MetricsView: View {
             HStack{
                 //Text("\(viewModel.selectedCiudadMunicipio)")
                 VStack {
-                    Grid {
-                        GridRow {
+                    VStack (alignment:.center){
+                        HStack(alignment:.top) {
                             DISTRIBUCIONDEVIVIENDAS()
-                            Grid{
-                                GridRow{
+                            VStack(alignment: .center){
+                                HStack(alignment:.top){
                                     DENSIDADPOBLACIONAL()
                                     POBLACIONTOTAL()
                                 }
-                                PORCENTAJEPOBREZA()
-                                
+                                HStack(alignment:.center){
+                                    PORCENTAJEPOBREZA()
+                                        .padding(.trailing, 5.0)
+                                    PORCENTAJEinundada()
+                                        .padding(.leading, 10.0)
+                                }
                             }
                             
+                        }
+                        HStack (alignment: .top){
+                            SERVICIOSBASICOS()
+                            VStack(alignment:.center){
+                                SUPERFICIEDELACIUDAD()
+                                AREAINUNDADA()
+                            }
+                        }
+                        HStack (alignment: .top){
+                            PRECIPITACIONES()
+                            PELIGRODEINUNDACION()
                         }
                         /*if isLoading{
                             ProgressView()
@@ -242,6 +257,7 @@ struct MetricsView: View {
                             .opacity(0.5)
                     }.padding([.top, .leading, .trailing])
                         .padding(.bottom, 5.0)
+                    Divider()
                     HStack {
                         Text("Viviendas con agua entubada")
                             .font(.caption)
@@ -308,7 +324,7 @@ struct MetricsView: View {
                 Rectangle()
                     .foregroundStyle(.gray6)
                     .opacity(0.7)
-                    .cornerRadius(20)
+                    .cornerRadius(15)
                     HStack {
                         Text("Pobreza")
                             .font(.caption2)
@@ -322,7 +338,7 @@ struct MetricsView: View {
                             ProgressView()
                         }else{
                             Text("85.42")
-                                .font(.body)
+                                .font(.callout)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)
                             /*if let data = inegiData,
@@ -339,6 +355,364 @@ struct MetricsView: View {
                     
                 
             }.frame(width: 140, height: 50)
+        }
+    }
+    
+    //MARK: ‼️FUNC:POBLACIÓN
+    func PORCENTAJEinundada() -> some View {
+        VStack{
+            Text("PORCENTAJE")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(15)
+                    HStack{
+                        Text("Área inundada")
+                            .font(.caption2)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.white)
+                            
+//                            .padding(.leading, 3.0)
+                            
+                        Spacer()
+                        Image(systemName: "percent")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("85.42")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                            /*if let data = inegiData,
+                               let densityValue = data.indicators["viviendasConElectricidad"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }*/
+                        }
+                        
+                    }.padding(3.0)
+                    
+                
+            }.frame(width: 140, height: 50)
+        }
+    }
+    
+    //MARK: ‼️FUNC:ÁREA INUNDADA
+    func AREAINUNDADA() -> some View {
+        VStack {
+            Text("ÁREA INUNDADA")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+//                .padding(.horizontal)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack {
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("5,200.00")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                        }
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack{
+                        Image(systemName: "water.waves")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        Spacer()
+                        
+                        Text("Km²")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.leading, .trailing])
+                }
+            }.frame(width: 140, height: 90)
+        }
+    }
+    
+    //MARK: ‼️FUNC:SUPERFICIE DE LA CIUDAD
+    func SUPERFICIEDELACIUDAD() -> some View {
+        VStack {
+            Text("SUPERFICIE DE LA CIUDAD")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+//                .padding(.horizontal)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack {
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("100,000.00")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                        }
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack{
+                        Image(systemName: "circle.circle")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        Spacer()
+                        
+                        Text("Km²")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.leading, .trailing])
+                }
+            }.frame(width: 140, height: 90)
+        }
+    }
+    
+    //MARK: ‼️FUNC:SERVICIOS BÁSICOS
+    func SERVICIOSBASICOS() -> some View {
+        VStack {
+            Text("SERVICIOS BÁSICOS")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack(alignment:.center){
+                    HStack{
+                        Image(systemName: "stethoscope")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        Text("Hospitales")
+                            .font(.title3)
+                            .bold()
+                        
+                    }.padding(5.0)
+                    Divider().padding(.horizontal)
+                    HStack (alignment:.center){
+                        Text("Hospital mas cercano a:")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("2")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
+                        Text("Km")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    Divider().padding(.horizontal)
+                    HStack (alignment:.center){
+                        Text("Tiempo de desplazamiento:")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("15")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
+                        Text("min")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    Divider().padding(.horizontal)
+                    HStack (alignment:.center){
+                        Text("No. en un radio de 10 km:")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("15")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
+                        Text("hospitales")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    
+                }
+            }.frame(width: 370, height: 200)
+        }
+    }
+    
+    //MARK: ‼️FUNC:PELIGRO DE INUNDACIÓN
+    func PELIGRODEINUNDACION() -> some View {
+        VStack {
+            Text("PELIGRO DE INUNDACIÓN")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                .padding(.horizontal)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack {
+                        Image(systemName: "water.waves.and.arrow.trianglehead.down.trianglebadge.exclamationmark")
+                            
+                            .foregroundStyle(.teal)
+                                
+                            if isLoading{
+                                ProgressView()
+                            }else{
+                                Text("Alto")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack{
+                        
+                        Spacer()
+                        
+                        Text("Nivel")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.leading, .trailing])
+                }
+            }.frame(width: 140, height: 90)
+        }
+    }
+    
+    
+    //MARK: ‼️FUNC:PRECIPITACIONES
+    func PRECIPITACIONES() -> some View {
+        VStack {
+            Text("PRECIPITACIONES")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                HStack(alignment:.center){
+                    VStack(alignment:.leading){
+                        Text("Umbral en 12 horas:")
+                            .font(.caption)
+                            .multilineTextAlignment(.leading)
+                            .foregroundStyle(.white)
+                            .padding([ .leading, .trailing])
+                            .padding([.top], 5.0)
+                        
+                        HStack{
+                            Image(systemName: "clock")
+                                .foregroundStyle(.teal)
+                                .bold()
+                                .padding()
+                            if isLoading{
+                                ProgressView()
+                            }else{
+                                Text("50")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                        }.padding(.horizontal)
+                        HStack{
+                            Spacer()
+                            Text("mm")
+                                .font(.caption)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.white)
+                                .opacity(0.5)
+                                .padding(.trailing)
+                        }
+                    }
+                    
+                    Divider().padding()
+                    VStack(alignment:.leading){
+                        Text("Promedio anual")
+                            .font(.caption)
+                            .multilineTextAlignment(.leading)
+                            .foregroundStyle(.white)
+                            .padding([ .leading, .trailing])
+                            .padding([.top], 5.0)
+                        HStack{
+                            Image(systemName: "calendar")
+                                .foregroundStyle(.teal)
+                                .bold()
+                                .padding()
+                            if isLoading{
+                                ProgressView()
+                            }else{
+                                Text("840")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                            
+                        }.padding(.horizontal)
+                        HStack{
+                            Spacer()
+                            Text("mm")
+                                .font(.caption)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.white)
+                                .opacity(0.5)
+                                .padding(.trailing)
+                        }
+                    }
+                }
+            }.frame(width: 370, height: 90)
         }
     }
 }
