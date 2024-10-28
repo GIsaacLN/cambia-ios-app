@@ -20,6 +20,7 @@ struct MapView: View {
             MapViewRepresentable(
                 viewModel: viewModel
             )
+//            .frame(width: 560,height: 690)
             VStack {
                 HStack {
                     Spacer()

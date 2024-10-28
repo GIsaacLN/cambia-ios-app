@@ -18,7 +18,7 @@ struct SearchView: View {
     @EnvironmentObject var viewModel : CiudadMunicipioViewModel
     
     var body: some View {
-        Text("\(viewModel.selectedCiudadMunicipio)")
+        //Text("\(viewModel.selectedCiudadMunicipio)")
         VStack {
             TextField("Buscar Ciudad o Municipio", text: $searchText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -70,6 +70,8 @@ struct SearchView: View {
             }
         }
         .padding()
+        .background(Color.gray4.edgesIgnoringSafeArea(.all))
+
     }
     
     // Función para filtrar los resultados según el texto de búsqueda

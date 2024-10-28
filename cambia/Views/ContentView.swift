@@ -16,8 +16,6 @@ struct ContentView: View {
             TabView {
                 Tab("Metricas", systemImage: "play") {
                     MetricsView()
-                    //MARK: Error
-                    //no se pasa viewModel: viewModel
                 }
                 Tab("Analisis", systemImage: "books.vertical") {
                     //LibraryView()
@@ -30,15 +28,14 @@ struct ContentView: View {
                  }*/
                 Tab(role: .search) {
                     SearchView()
-                    //SearchView(viewModel: viewModel)
                 }
                 
             }.tabViewStyle(.tabBarOnly)
                 .preferredColorScheme(.dark)
                 .navigationTitle(            viewModel.textselectedCiudadMunicipio(for: viewModel.selectedCiudadMunicipio.ciudad, to: viewModel.selectedCiudadMunicipio.municipios))
                 .navigationBarTitleDisplayMode(.inline)
-        }
-       // .environmentObject(viewModel)
+                
+        }.background(Color.gray4.edgesIgnoringSafeArea(.all))
     }
 }
 

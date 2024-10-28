@@ -43,94 +43,37 @@ struct MetricsView: View {
     //MARK: MetricsView body
     var body: some View {
         NavigationStack {
-            VStack{
-                Text("\(viewModel.selectedCiudadMunicipio)")
-                HStack {
+            HStack{
+                //Text("\(viewModel.selectedCiudadMunicipio)")
+                VStack {
                     Grid {
                         GridRow {
-                            VStack {
-                                Text("Escuelas")
-                                    .font(.title3)
-                                    .bold()
-                                Divider()
-                                HStack{
-                                    Text("Escuela mas cercana:")
-                                        .font(.caption)
-                                    Spacer()
-                                    Text("2")
-                                        .foregroundStyle(Color.orange)
-                                        .font(.title)
-                                        .bold()
-                                    Text("Km")
-                                        .font(.caption)
+                            DISTRIBUCIONDEVIVIENDAS()
+                            Grid{
+                                GridRow{
+                                    DENSIDADPOBLACIONAL()
+                                    POBLACIONTOTAL()
                                 }
-                                Divider()
-                                HStack{
-                                    Text("Tiempo de desplazamiento:")
-                                        .font(.caption)
-                                    Spacer()
-                                    Text("15")
-                                        .foregroundStyle(Color.orange)
-                                        .font(.title)
-                                        .bold()
-                                    Text("minutos")
-                                        .font(.caption)
-                                }
-                                Divider()
-                                HStack{
-                                    Text("No. en un radio de")
-                                        .font(.caption)
-                                    /*Picker("\($radio)", selection: $radio) {
-                                     ForEach(2..<100) {
-                                     Text("\($0)")
-                                     }
-                                     }.pickerStyle(.wheel)
-                                     */
-                                    Text("Km")
-                                        .font(.caption)
-                                    Spacer()
-                                    Text("5")
-                                        .foregroundStyle(Color.orange)
-                                        .font(.title)
-                                        .bold()
-                                }
+                                PORCENTAJEPOBREZA()
                                 
                             }
-                            .padding()
-                            .background(Color.gray6)
-                            .cornerRadius(20)
-                            .opacity(0.7)
                             
-                            
-                            Text("R1")
-                            Text("R1")
                         }
-                        if isLoading{
+                        /*if isLoading{
                             ProgressView()
                         }else{
-                            // Mostrar los resultados de los indicadores
-                            Button(action: loadData) {
-                                Text("Cargar Datos")
-                                    .padding()
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                            }
-                            if let data = inegiData {
-                                Text("Resultados para \(data.city), \(data.municipio):")
-                                    .font(.headline)
-                                ForEach(data.indicators.sorted(by: >), id: \.key) { key, value in
-                                    if let formattedValue = formatter.string(from: NSNumber(value: value)) {
-                                        Text("\(key): \(formattedValue)")
-                                    }
-                                }
-                            }
-                        }
+                            DatosDemográficosSociales()
+                        }*/
                     }
-                    
-                    MapView(viewModel: mapViewModel)
+                    .padding()
+                    Spacer()
                 }
+                MapView(viewModel: mapViewModel)
+                    .padding()
+                
             }
+            .background(Color.gray4.edgesIgnoringSafeArea(.all))
+
         }
         .onAppear() {
             loadData()
@@ -147,7 +90,7 @@ struct MetricsView: View {
             let manager = InegiDataManager()
             manager.delegate = errorDelegate
             // Solicita los indicadores de población y densidad
-            let indicators = [IndicatorType.poblacionTotal.rawValue, IndicatorType.dencidad.rawValue]
+            let indicators = [ IndicatorType.viviendasConAgua.rawValue, IndicatorType.viviendasConElectricidad.rawValue,IndicatorType.poblacionTotal.rawValue, IndicatorType.dencidad.rawValue]
             
             manager.fetchData(indicators: indicators, ciudad:viewModel.selectedCiudadMunicipio.ciudad.rawValue, municipio: viewModel.selectedCiudadMunicipio.municipios?.rawValue) { data in
                 if let dat = data {
@@ -160,7 +103,247 @@ struct MetricsView: View {
             }
         }
     }
+    
+    //MARK: FUNC:DENSIDAD
+    func DENSIDADPOBLACIONAL() -> some View {
+        VStack {
+            Text("DENSIDAD POBLACIONAL")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                .padding(.horizontal)
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack {
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            if let data = inegiData,
+                               let densityValue = data.indicators["dencidad"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack{
+                        Image(systemName: "person.3.sequence.fill")
+                            .foregroundStyle(.teal)
+                        Spacer()
+                        Text("Hab/Km²")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.leading, .trailing])
+                }
+            }.frame(width: 140, height: 90)
+        }
+    }
+    
+    
+    //MARK: FUNC:POBLACIÓN
+    func POBLACIONTOTAL() -> some View {
+        VStack {
+            Text("POBLACIÓN TOTAL")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+//                .padding(.horizontal)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack {
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            if let data = inegiData,
+                               let densityValue = data.indicators["poblacionTotal"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }}
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack{
+                        Image(systemName: "figure")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        Spacer()
+                        Text("Personas")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.leading, .trailing])
+                }
+            }.frame(width: 140, height: 90)
+        }
+    }
+    
+    //MARK: FUNC:POBLACIÓN
+    func DISTRIBUCIONDEVIVIENDAS() -> some View {
+        VStack {
+            Text("DISTRIBUCIÓN DE VIVIENDAS")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                VStack{
+                    HStack{
+                        Image(systemName: "percent")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        Text("Porcentajes")
+                            .font(.title3)
+                            .bold()
+                        
+                    }.padding(5.0)
+                    Divider()
+                    HStack {
+                        Text("Viviendas con electricidad")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            if let data = inegiData,
+                               let densityValue = data.indicators["viviendasConElectricidad"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        Text("%")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    HStack {
+                        Text("Viviendas con agua entubada")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                        Spacer()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            if let data = inegiData,
+                               let densityValue = data.indicators["viviendasConAgua"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        Text("%")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }.padding([.top, .leading, .trailing])
+                        .padding(.bottom, 5.0)
+                    
+                }
+            }.frame(width: 200, height: 160)
+        }
+    }
+    
+    func DatosDemográficosSociales() -> some View {
+        VStack {
+            // Mostrar los resultados de los indicadores
+            Button(action: loadData) {
+                Text("Cargar Datos")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+            if let data = inegiData {
+                Text("Resultados para \(data.city), \(data.municipio):")
+                    .font(.headline)
+                Text("\(data.indicators.count)")
+                ForEach(data.indicators.sorted(by: >), id: \.key) { key, value in
+                    if let formattedValue = formatter.string(from: NSNumber(value: value)) {
+                        Text("\(key): \(formattedValue)")
+                    }
+                }
+            }
+        }
+    }
+    
+    //MARK: ‼️FUNC:POBLACIÓN
+    func PORCENTAJEPOBREZA() -> some View {
+        VStack {
+            Text("PORCENTAJE")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+//                .padding(.horizontal)
+                
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                    HStack {
+                        Text("Pobreza")
+                            .font(.caption2)
+                            .foregroundStyle(.white)
+                            .padding(.leading, 3.0)
+                        Spacer()
+                        Image(systemName: "percent")
+                            .foregroundStyle(.teal)
+                            .bold()
+                        if isLoading{
+                            ProgressView()
+                        }else{
+                            Text("85.42")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                            /*if let data = inegiData,
+                               let densityValue = data.indicators["viviendasConElectricidad"],
+                               let formattedValue = formatter.string(from: NSNumber(value: densityValue)) {
+                                Text(formattedValue)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }*/
+                        }
+                        
+                    }.padding(3.0)
+                    
+                
+            }.frame(width: 140, height: 50)
+        }
+    }
 }
 #Preview {
     MetricsView().preferredColorScheme(.dark)
 }
+
+

@@ -36,6 +36,10 @@ struct InegiDataResponse: Codable {
                     indicators["poblacionTotal"] = obsValue
                 case IndicatorType.dencidad.rawValue:
                     indicators["dencidad"] = obsValue
+                case IndicatorType.viviendasConAgua.rawValue:
+                    indicators["viviendasConAgua"] = obsValue
+                case IndicatorType.viviendasConElectricidad.rawValue:
+                    indicators["viviendasConElectricidad"] = obsValue
                 default:
                     // Manejo de otros indicadores en el futuro
                     indicators[serie.indicador] = obsValue
