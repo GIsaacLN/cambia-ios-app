@@ -24,7 +24,7 @@ struct MapView: View {
             VStack {
                 HStack {
                     Spacer()
-                    VStack {
+                    VStack (alignment:.trailing){
                         // MapPitchToggle
                         Button(action: {
                             viewModel.togglePitchTrigger = true
@@ -61,6 +61,12 @@ struct MapView: View {
                                 .background(Color("gray5"))
                                 .foregroundStyle(.white)
                                 .cornerRadius(10)
+                                .opacity(viewModel.showLayerSelection ? 0.7  : 1)
+                        }
+                        if viewModel.showLayerSelection {
+                            LayerSelectionView(viewModel: viewModel)
+                                .cornerRadius(10)
+                                .frame(width: 300)
                         }
                     }
                     .accentColor(.white)
@@ -69,10 +75,14 @@ struct MapView: View {
                 Spacer()
                 // MapScaleView can be added here if needed
             }
+            /*.overlay {
+                if viewModel.showLayerSelection {
+                    LayerSelectionView(viewModel: viewModel)
+                        
+                }
+            }*/
             // Layer Selection Sheet
-            if viewModel.showLayerSelection {
-                LayerSelectionView(viewModel: viewModel)
-            }
+            
         }
     }
 }
@@ -112,10 +122,8 @@ struct LayerSelectionView: View {
     @ObservedObject var viewModel: MapViewModel
 
     var body: some View {
-        VStack {
-            Text("Select Layers")
-                .font(.headline)
-                .padding()
+        //VStack {
+           
             List {
                 ForEach(viewModel.availableLayers) { layer in
                     Button(action: {
@@ -131,7 +139,12 @@ struct LayerSelectionView: View {
                         }
                     }
                 }
+                .listRowBackground(Color("gray5"))
             }
+            .listStyle(.plain)
+            .cornerRadius(20)
+            .scrollDisabled(true)
+            /*
             Button(action: {
                 viewModel.showLayerSelection = false
             }) {
@@ -142,11 +155,7 @@ struct LayerSelectionView: View {
                     .background(Color("gray5"))
                     .foregroundColor(.white)
                     .cornerRadius(10)
-            }
-            .padding()
-        }
-        .background(Color.white)
-        .cornerRadius(10)
-        .padding()
+            }*/
+        //}
     }
 }

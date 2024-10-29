@@ -6,33 +6,52 @@
 //
 
 import SwiftUI
-import SwiftUI
-
-import SwiftUI
 
 struct SearchView: View {
-    @State private var searchText: String = ""
-    @State private var filteredCities: [Ciudad] = []
-    @State private var filteredMunicipios: [Municipio] = []
-    
-    @EnvironmentObject var viewModel : CiudadMunicipioViewModel
+    @Binding var isSearching: Bool
+    @Binding var searchText: String
     
     var body: some View {
-        //Text("\(viewModel.selectedCiudadMunicipio)")
-        VStack {
-            TextField("Buscar Ciudad o Municipio", text: $searchText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .onChange(of: searchText) { _ in
-                    filterResults() // Filtrar resultados en tiempo real
-                }
-            
+        ZStack {
+            Color.gray6.opacity(0.7)
+                .cornerRadius(20)
+            TextField("\(Image(systemName: "magnifyingglass"))  Buscar Ciudad o Municipio", text: $searchText)
+                .padding(.horizontal)
+                .padding(.vertical, 7.5)
+        }
+        .padding()
+    }
+}
+
+// SearchlistView para mostrar los resultados de búsqueda
+struct SearchlistView: View {
+    @Binding var isSearching: Bool
+    @Binding var searchText: String
+    @Binding var filteredCities: [Ciudad]
+    @Binding var filteredMunicipios: [Municipio]
+    
+    @EnvironmentObject var viewModel: CiudadMunicipioViewModel
+    
+    var body: some View {
+        let totalItems = filteredCities.count + filteredMunicipios.count
+        let rowHeight: CGFloat = 100 // Altura de cada fila
+        let maxHeight: CGFloat = 1000 // Altura máxima de la lista
+        
+        // Calcular la altura de la lista en función del número de elementos, con un límite de 400
+        let listHeight = min(CGFloat(totalItems) * rowHeight, maxHeight)
+        
+        VStack(alignment: .leading) {
             List {
                 if !filteredCities.isEmpty {
                     Section(header: Text("Ciudades Encontradas")) {
                         ForEach(filteredCities, id: \.self) { city in
                             Button {
                                 viewModel.updateCityMunicipality(for: city, to: nil)
+                                
+                                searchText = ""
+                                isSearching = false
+                                filteredCities = []
+                                filteredMunicipios = []
                             } label: {
                                 HStack {
                                     Text(city.displayName)
@@ -40,9 +59,7 @@ struct SearchView: View {
                                     
                                 }
                             }
-
-                            
-                        }
+                        }.listRowBackground(Color("gray5"))
                     }
                 }
                 
@@ -50,16 +67,18 @@ struct SearchView: View {
                     Section(header: Text("Municipios Encontrados")) {
                         ForEach(filteredMunicipios, id: \.self) { municipio in
                             Button {
-                                viewModel.updateMunicipality( to: municipio)
+                                viewModel.updateMunicipality(to: municipio)
+                                searchText = ""
+                                isSearching = false
+                                filteredCities = []
+                                filteredMunicipios = []
                             } label: {
                                 HStack {
                                     Text(municipio.displayName)
                                     Spacer()
-                                    
                                 }
                             }
-                            
-                        }
+                        }.listRowBackground(Color("gray5"))
                     }
                 }
                 
@@ -68,26 +87,20 @@ struct SearchView: View {
                         .foregroundColor(.gray)
                 }
             }
+            .frame(height: listHeight) // Ajustar la altura de la lista
+            .listStyle(.plain)
         }
+        .background(searchText.isEmpty ? Color.white.opacity(0) : Color("gray5"))
+        .cornerRadius(20)
+        .padding(.vertical)
         .padding()
-        .background(Color.gray4.edgesIgnoringSafeArea(.all))
-
-    }
-    
-    // Función para filtrar los resultados según el texto de búsqueda
-    func filterResults() {
-        if searchText.isEmpty {
-            filteredCities = []
-            filteredMunicipios = []
-        } else {
-            filteredCities = Ciudad.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased())}
-            filteredMunicipios = Municipio.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
-        }
+        .padding(.top)
     }
 }
 
+
 // Extensiones para agregar nombres amigables a las ciudades y municipios
-extension Ciudad{
+extension Ciudad {
     var displayName: String {
         switch self {
         case .ciudadDeMexico: return "Ciudad de México"
@@ -95,7 +108,7 @@ extension Ciudad{
     }
 }
 
-extension Municipio{
+extension Municipio {
     var displayName: String {
         switch self {
         case .azcapotzalco: return "Azcapotzalco"
@@ -118,7 +131,6 @@ extension Municipio{
     }
 }
 
-
-#Preview {
-    SearchView()
-}
+/*#Preview {
+    SearchView(isSearching: .constant(true), searchText: .constant(""))
+}*/

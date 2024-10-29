@@ -18,7 +18,7 @@ enum Ciudad: String, CaseIterable {
     case ciudadDeMexico = "07000009"
 }
 
-enum Municipio: String, CaseIterable {
+enum Municipio: String, CaseIterable{
     case azcapotzalco = "0002"
     case BenitoJuarez = "0014"
     case Coyoacan = "0003"
