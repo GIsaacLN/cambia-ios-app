@@ -1,6 +1,5 @@
 //
-//  File.swift
-//  AppiPrueba1
+//  InegiDataDelegate.swift
 //
 //  Created by yatziri on 26/10/24.
 //
