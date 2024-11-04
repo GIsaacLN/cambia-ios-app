@@ -87,7 +87,7 @@ struct MetricsView: View {
                     .padding()
                 
             }
-            .background(Color.gray4.edgesIgnoringSafeArea(.all))
+            .background(Color.gray.edgesIgnoringSafeArea(.all))
 
         }
         .onAppear() {

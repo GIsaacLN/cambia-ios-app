@@ -8,6 +8,12 @@
 import SwiftUI
 import MapKit
 
+// Agregar los nombres de los archivos JSON
+let floodZonesFile = "inundacionmunicipio"
+let landslideZonesFile = "laderas"
+let tsunamiZonesFile = "tsunamis"
+let volcanoZonesFile = "volcanesactivos"
+
 class MapViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var overlays: [MKOverlay] = []
@@ -25,7 +31,6 @@ class MapViewModel: ObservableObject {
     @Published var selectedLayers: [MapLayer] = []
     @Published var availableLayers: [MapLayer] = []
     @Published var showLayerSelection: Bool = false
-    
 
     // MARK: - Initialization
     init() {
@@ -42,11 +47,13 @@ class MapViewModel: ObservableObject {
     // MARK: - Layer Setup
     func setupAvailableLayers() {
         availableLayers = [
-            MapLayer(name: "Flood Zones", type: .geoJSON("inundacionmunicipio")),
+            MapLayer(name: "Flood Zones", type: .geoJSON(floodZonesFile)),
+            MapLayer(name: "Landslide Zones", type: .geoJSON(landslideZonesFile)),
+            MapLayer(name: "Tsunami Zones", type: .geoJSON(tsunamiZonesFile)),
+            MapLayer(name: "Active Volcanoes", type: .geoJSON(volcanoZonesFile)),
             MapLayer(name: "Hospitals", type: .pointsOfInterest("Hospital")),
             MapLayer(name: "Police Stations", type: .pointsOfInterest("Police")),
             MapLayer(name: "Fire Stations", type: .pointsOfInterest("Fire Station"))
-            // Add more layers as needed
         ]
     }
 
@@ -110,7 +117,7 @@ class MapViewModel: ObservableObject {
             let jsonData = try Data(contentsOf: jsonUrl)
             let decoder = MKGeoJSONDecoder()
             let geoJSONObjects = try decoder.decode(jsonData)
-            newOverlays = parseGeoJSON(geoJSONObjects)
+            newOverlays = parseGeoJSON(geoJSONObjects, fileName: fileName)
         } catch {
             print("Error loading GeoJSON: \(error)")
         }
@@ -118,37 +125,33 @@ class MapViewModel: ObservableObject {
         return newOverlays
     }
 
-    private func parseGeoJSON(_ geoJSONObjects: [MKGeoJSONObject]) -> [MKOverlay] {
+    private func parseGeoJSON(_ geoJSONObjects: [MKGeoJSONObject], fileName: String) -> [MKOverlay] {
         var overlays: [MKOverlay] = []
 
         for object in geoJSONObjects {
             if let feature = object as? MKGeoJSONFeature {
-                var fillColor: UIColor = UIColor.red.withAlphaComponent(0.5)
-                let strokeColor: UIColor = UIColor.blue
-                let lineWidth: CGFloat = 2.0
+                var fillColor: UIColor = .red.withAlphaComponent(0.5)
+                var strokeColor: UIColor = .blue
+                var lineWidth: CGFloat = 2.0
 
-                // Extract properties if needed
-                if let propertiesData = feature.properties,
-                   let properties = try? JSONSerialization.jsonObject(with: propertiesData, options: []) as? [String: Any] {
-                    if let dangerLevel = properties["PELIGRO_IN"] as? String {
-                        switch dangerLevel {
-                        case "Muy bajo":
-                            fillColor = UIColor.green.withAlphaComponent(0.5)
-                        case "Bajo":
-                            fillColor = UIColor.yellow.withAlphaComponent(0.5)
-                        case "Medio":
-                            fillColor = UIColor.orange.withAlphaComponent(0.5)
-                        case "Alto":
-                            fillColor = UIColor.red.withAlphaComponent(0.5)
-                        case "Muy alto":
-                            fillColor = UIColor.black.withAlphaComponent(0.5)
-                        default:
-                            fillColor = UIColor.gray.withAlphaComponent(0.5)
-                        }
-                    }
+                // Personalización de colores según el tipo de capa
+                switch fileName {
+                case floodZonesFile:
+                    fillColor = .blue.withAlphaComponent(0.3)
+                    strokeColor = .blue
+                case landslideZonesFile:
+                    fillColor = .brown.withAlphaComponent(0.4)
+                    strokeColor = .brown
+                case tsunamiZonesFile:
+                    fillColor = .cyan.withAlphaComponent(0.4)
+                    strokeColor = .cyan
+                case volcanoZonesFile:
+                    fillColor = .red.withAlphaComponent(0.6)
+                    strokeColor = .darkGray
+                default:
+                    break
                 }
 
-                // Process geometries
                 for geometry in feature.geometry {
                     if let polygon = geometry as? MKPolygon {
                         let styledPolygon = StyledPolygon(points: polygon.points(), count: polygon.pointCount)
@@ -156,8 +159,12 @@ class MapViewModel: ObservableObject {
                         styledPolygon.strokeColor = strokeColor
                         styledPolygon.lineWidth = lineWidth
                         overlays.append(styledPolygon)
+                    } else if let point = geometry as? MKPointAnnotation {
+                        // Agrega el punto a las anotaciones en lugar de los overlays
+                        DispatchQueue.main.async {
+                            self.annotations.append(point)
+                        }
                     } else if let multiPolygon = geometry as? MKMultiPolygon {
-                        // Handle MKMultiPolygon by creating multiple MKPolygon overlays
                         for subPolygon in multiPolygon.polygons {
                             let styledPolygon = StyledPolygon(points: subPolygon.points(), count: subPolygon.pointCount)
                             styledPolygon.fillColor = fillColor
@@ -165,10 +172,6 @@ class MapViewModel: ObservableObject {
                             styledPolygon.lineWidth = lineWidth
                             overlays.append(styledPolygon)
                         }
-                    } else if let polyline = geometry as? MKPolyline {
-                        overlays.append(polyline)
-                    } else {
-                        print("Unsupported geometry type: \(type(of: geometry))")
                     }
                 }
             }
@@ -176,12 +179,13 @@ class MapViewModel: ObservableObject {
         return overlays
     }
 
+
     // MARK: - Search Functionality
     func search(for query: String, completion: @escaping ([MKAnnotation]) -> Void) {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.resultTypes = .pointOfInterest
-        request.region = region // Use the current region
+        request.region = region
 
         let search = MKLocalSearch(request: request)
         search.start { response, error in
@@ -205,3 +209,4 @@ class MapViewModel: ObservableObject {
         }
     }
 }
+
