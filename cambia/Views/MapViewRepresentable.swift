@@ -33,27 +33,33 @@ struct MapViewRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
-        // Update overlays
-        if mapView.overlays.count != viewModel.overlays.count {
+        // Actualización de overlays
+        let currentOverlays = Set(mapView.overlays.compactMap { $0 as? StyledPolygon })
+        let newOverlays = Set(viewModel.overlays.compactMap { $0 as? StyledPolygon })
+
+        if currentOverlays != newOverlays {
             mapView.removeOverlays(mapView.overlays)
             mapView.addOverlays(viewModel.overlays)
         }
-        
-        // Update region
+
+        // Actualización de la región
         if mapView.region.center.latitude != viewModel.region.center.latitude ||
             mapView.region.center.longitude != viewModel.region.center.longitude ||
             mapView.region.span.latitudeDelta != viewModel.region.span.latitudeDelta ||
             mapView.region.span.longitudeDelta != viewModel.region.span.longitudeDelta {
             mapView.setRegion(viewModel.region, animated: true)
         }
-        
-        // Update annotations
-        if mapView.annotations.count != viewModel.annotations.count {
+
+        // Actualización de anotaciones
+        let currentAnnotations = Set(mapView.annotations.compactMap { $0 as? MKPointAnnotation })
+        let newAnnotations = Set(viewModel.annotations.compactMap { $0 as? MKPointAnnotation })
+
+        if currentAnnotations != newAnnotations {
             mapView.removeAnnotations(mapView.annotations)
             mapView.addAnnotations(viewModel.annotations)
         }
-        
-        // Handle zoom in
+
+        // Manejo de zoom in
         if viewModel.zoomInTrigger {
             var newRegion = mapView.region
             newRegion.span.latitudeDelta /= 2.0
@@ -63,8 +69,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                 self.viewModel.zoomInTrigger = false
             }
         }
-        
-        // Handle zoom out
+
+        // Manejo de zoom out
         if viewModel.zoomOutTrigger {
             var newRegion = mapView.region
             newRegion.span.latitudeDelta *= 2.0
@@ -74,8 +80,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                 self.viewModel.zoomOutTrigger = false
             }
         }
-        
-        // Handle pitch toggle
+
+        // Manejo de alternancia de inclinación
         if viewModel.togglePitchTrigger {
             let camera = mapView.camera
             camera.pitch = camera.pitch == 0 ? 60 : 0
@@ -84,8 +90,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                 self.viewModel.togglePitchTrigger = false
             }
         }
-        
-        // Handle user location
+
+        // Seguimiento de la ubicación del usuario
         if viewModel.showUserLocationTrigger {
             mapView.setUserTrackingMode(.follow, animated: true)
             DispatchQueue.main.async {
@@ -119,6 +125,10 @@ struct MapViewRepresentable: UIViewRepresentable {
                 renderer.strokeColor = UIColor.white
                 renderer.lineWidth = 1.0
                 return renderer
+            } else if let pointAnnotation = overlay as? MKPointAnnotation {
+                let renderer = MKMarkerAnnotationView(annotation: pointAnnotation, reuseIdentifier: nil)
+                renderer.markerTintColor = .red // Personalizar según el tipo de riesgo si se desea
+                return MKOverlayRenderer(overlay: overlay)
             } else {
                 print("Unhandled overlay type: \(type(of: overlay))")
                 return MKOverlayRenderer(overlay: overlay)
