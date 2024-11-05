@@ -1,9 +1,7 @@
-// MetricsViewModel.swift
-// cambia
-
 import SwiftUI
 import MapKit
 import Combine
+import CoreML
 
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -11,20 +9,23 @@ class MetricsViewModel: ObservableObject {
     @Published var travelTimeToNearestHospital: Int = 0
     @Published var numberOfHospitalsInRadius: Int = 0
     @Published var floodZonePercentage: Double? = nil
-    @Published var cityArea: Double? = 100000.0 // Área de ejemplo de la ciudad en Km²
-    @Published var inundatedArea: Double? = 5200.0 // Área inundada de ejemplo en Km²
+    @Published var cityArea: Double? = 100000.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+    @Published var inundatedArea: Double? = 5200.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
     @Published var floodRiskLevel: String? = nil
-    @Published var hourlyPrecipitation: Double? = 50.0 // Umbral de precipitación en mm
-    @Published var annualPrecipitation: Double? = 840.0 // Promedio anual en mm
+    @Published var hourlyPrecipitation: Double? = 50.0 // Umbral de precipitación en mm o poner los de la CDMX para la demo
+    @Published var annualPrecipitation: Double? = 840.0 // Promedio anual en mm o poner los de la CDMX para la demo
+    @Published var floodRiskPrediction: String = "No calculado" // Resultado de la predicción
     @Published var inegiData: InegiData?
     
     // Reference to MapViewModel to access map data
     private var mapViewModel: MapViewModel
     private var cancellables = Set<AnyCancellable>()
+    private var floodRiskModel: FloodRiskPredictor? // Modelo ML
     
     // MARK: - Initialization
     init(mapViewModel: MapViewModel) {
         self.mapViewModel = mapViewModel
+        loadModel() // Cargar el modelo ML al inicializar
 
         // Observe changes in selected layers and map data
         mapViewModel.$selectedLayers
@@ -43,6 +44,53 @@ class MetricsViewModel: ObservableObject {
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
     }
+    
+    // MARK: - Load ML Model
+    private func loadModel() {
+        do {
+            self.floodRiskModel = try FloodRiskPredictor(configuration: MLModelConfiguration())
+        } catch {
+            print("Error al cargar el modelo ML: \(error)")
+        }
+    }
+
+    // MARK: - Perform Prediction
+    func performPrediction() {
+        guard let densidadPoblacional = floodZonePercentage,
+              let areaInundada = inundatedArea,
+              let precipitacionAnual = annualPrecipitation else {
+            floodRiskPrediction = "Datos insuficientes para la predicción"
+            return
+        }
+
+        // Convertimos el nivel de riesgo a un string basado en "High" o "Low"
+        let nivelRiesgo = floodRiskLevel == "High" ? "1" : "0"
+
+        do {
+            // Crear la entrada para el modelo con `NivelRiesgo` como `String`
+            let prediction = try floodRiskModel?.prediction(
+                DensidadPoblacional: Int64(densidadPoblacional),
+                PrecipitacionAnual: Int64(precipitacionAnual),
+                AreaInundada: areaInundada,
+                NivelRiesgo: nivelRiesgo
+            )
+            
+            // Asignar el resultado de la predicción basado en `FloodRisk`
+            let riskLabel = prediction?.FloodRisk == 1 ? "Alto riesgo de inundación" : "Bajo riesgo de inundación"
+            
+            // Si deseas mostrar también la probabilidad, puedes extraerla del diccionario
+            if let probability = prediction?.FloodRiskProbability[prediction?.FloodRisk ?? 0] {
+                floodRiskPrediction = "\(riskLabel) (Probabilidad: \(String(format: "%.2f", probability * 100))%)"
+            } else {
+                floodRiskPrediction = riskLabel
+            }
+            0
+        } catch {
+            floodRiskPrediction = "Error en la predicción"
+            print("Error al realizar la predicción: \(error)")
+        }
+    }
+
 
     // MARK: - Metrics Calculation
     func updateMetrics() {
@@ -51,10 +99,10 @@ class MetricsViewModel: ObservableObject {
         numberOfHospitalsInRadius = 0
         floodZonePercentage = nil
         floodRiskLevel = nil
-        cityArea = 100000.0 // Default city area, adjust based on data if available
-        inundatedArea = 5200.0 // Default flooded area
-        hourlyPrecipitation = 50.0 // Default threshold precipitation
-        annualPrecipitation = 840.0 // Default average annual precipitation
+        cityArea = 100000.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+        inundatedArea = 5200.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+        hourlyPrecipitation = 50.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+        annualPrecipitation = 840.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
 
         guard let userLocation = mapViewModel.userLocation else { return }
         let userCoordinate = userLocation.coordinate
@@ -67,6 +115,9 @@ class MetricsViewModel: ObservableObject {
         
         // Update metrics based on Inegi data
         updateInegiMetrics()
+        
+        // Perform prediction after updating metrics
+        performPrediction()
     }
     
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
@@ -114,11 +165,11 @@ class MetricsViewModel: ObservableObject {
         guard let inegiData = inegiData else { return }
         
         // Densidad Poblacional
-        if let density = inegiData.indicators["dencidad"] {
+        if let density = inegiData.indicators["densidad"] {
             floodZonePercentage = density
         }
         
-        // Área de la Ciudad (Usa un valor predeterminado o ajusta si el dato exacto está disponible)
+        // Área de la Ciudad
         if let area = inegiData.indicators["cityArea"] {
             cityArea = area
         }
@@ -128,16 +179,8 @@ class MetricsViewModel: ObservableObject {
             inundatedArea = inundated
         }
         
-        // Población Total
-        if let totalPopulation = inegiData.indicators["poblacionTotal"] {
-            // Actualiza algún cálculo relacionado si es necesario, como el riesgo basado en densidad
-        }
-        
         // Viviendas con Agua y Electricidad
         let waterCoverage = inegiData.indicators["viviendasConAgua"]
         let electricityCoverage = inegiData.indicators["viviendasConElectricidad"]
-
-        // Update values in other views if necessary
-        // Example: Some metric based on water/electricity coverage or area inundation, etc.
     }
 }
