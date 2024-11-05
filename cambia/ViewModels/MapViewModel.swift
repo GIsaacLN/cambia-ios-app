@@ -124,8 +124,8 @@ class MapViewModel: ObservableObject {
         for object in geoJSONObjects {
             if let feature = object as? MKGeoJSONFeature {
                 var fillColor: UIColor = UIColor.red.withAlphaComponent(0.5)
-                let strokeColor: UIColor = UIColor.blue
-                let lineWidth: CGFloat = 2.0
+                let strokeColor: UIColor = UIColor.white
+                let lineWidth: CGFloat = 1.0
 
                 // Extract properties if needed
                 if let propertiesData = feature.properties,
@@ -133,17 +133,17 @@ class MapViewModel: ObservableObject {
                     if let dangerLevel = properties["PELIGRO_IN"] as? String {
                         switch dangerLevel {
                         case "Muy bajo":
-                            fillColor = UIColor.green.withAlphaComponent(0.5)
+                            fillColor = UIColor.green.withAlphaComponent(0.3)
                         case "Bajo":
-                            fillColor = UIColor.yellow.withAlphaComponent(0.5)
+                            fillColor = UIColor.yellow.withAlphaComponent(0.3)
                         case "Medio":
-                            fillColor = UIColor.orange.withAlphaComponent(0.5)
+                            fillColor = UIColor.orange.withAlphaComponent(0.3)
                         case "Alto":
-                            fillColor = UIColor.red.withAlphaComponent(0.5)
+                            fillColor = UIColor.red.withAlphaComponent(0.3)
                         case "Muy alto":
-                            fillColor = UIColor.black.withAlphaComponent(0.5)
+                            fillColor = UIColor.purple.withAlphaComponent(0.4)
                         default:
-                            fillColor = UIColor.gray.withAlphaComponent(0.5)
+                            fillColor = UIColor.blue.withAlphaComponent(0.8)
                         }
                     }
                 }

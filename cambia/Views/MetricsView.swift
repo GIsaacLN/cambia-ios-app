@@ -45,35 +45,38 @@ struct MetricsView: View {
         NavigationStack {
             HStack{
                 //Text("\(viewModel.selectedCiudadMunicipio)")
-                VStack {
-                    VStack (alignment:.center){
-                        HStack(alignment:.top) {
+                VStack(spacing: 10){
+                    VStack (alignment:.center, spacing: 10){
+                        HStack(alignment:.top, spacing: 10){
                             DISTRIBUCIONDEVIVIENDAS()
-                            VStack(alignment: .center){
-                                HStack(alignment:.top){
+                            
+                            VStack(alignment: .center, spacing: 10){
+                                HStack(alignment:.top, spacing: 10){
                                     DENSIDADPOBLACIONAL()
                                     POBLACIONTOTAL()
                                 }
-                                HStack(alignment:.center){
+                                
+                                HStack(alignment:.center , spacing: 10){
                                     PORCENTAJEPOBREZA()
-                                        .padding(.trailing, 5.0)
                                     PORCENTAJEinundada()
-                                        .padding(.leading, 10.0)
                                 }
                             }
-                            
                         }
-                        HStack (alignment: .top){
+                        
+                        HStack (alignment: .top, spacing: 10){
                             SERVICIOSBASICOS()
-                            VStack(alignment:.center){
+                            
+                            VStack(alignment:.center, spacing: 10){
                                 SUPERFICIEDELACIUDAD()
                                 AREAINUNDADA()
                             }
                         }
-                        HStack (alignment: .top){
+                        
+                        HStack (alignment: .top, spacing: 10){
                             PRECIPITACIONES()
                             PELIGRODEINUNDACION()
                         }
+                        
                         /*if isLoading{
                             ProgressView()
                         }else{
@@ -87,7 +90,7 @@ struct MetricsView: View {
                     .padding()
                 
             }
-            .background(Color.gray4.edgesIgnoringSafeArea(.all))
+            .background(Color.gray5.edgesIgnoringSafeArea(.all))
 
         }
         .onAppear() {
@@ -97,7 +100,7 @@ struct MetricsView: View {
     }
     
     //MARK: FUNC:InegiDataManager
-    // Función para cargar los datos usando `InegiDataManager`
+    /// Función para cargar los datos usando `InegiDataManager`
     func loadData() {
         isLoading = true
         DispatchQueue.global(qos:.background).async {
@@ -163,7 +166,6 @@ struct MetricsView: View {
         }
     }
     
-    
     //MARK: FUNC:POBLACIÓN
     func POBLACIONTOTAL() -> some View {
         VStack {
@@ -209,36 +211,46 @@ struct MetricsView: View {
         }
     }
     
-    //MARK: FUNC:POBLACIÓN
+    //MARK: FUNC: Distribucuon de viviendas  ✅
     func DISTRIBUCIONDEVIVIENDAS() -> some View {
-        VStack {
+        VStack{
             Text("DISTRIBUCIÓN DE VIVIENDAS")
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
                 .lineLimit(1)
+                .padding(.bottom)
                 
             ZStack {
                 Rectangle()
                     .foregroundStyle(.gray6)
                     .opacity(0.7)
                     .cornerRadius(20)
+                
                 VStack{
                     HStack{
                         Image(systemName: "percent")
                             .foregroundStyle(.teal)
                             .bold()
-                        Text("Porcentajes")
+                        
+                        Text("Viviendas")
                             .font(.title3)
                             .bold()
-                        
-                    }.padding(5.0)
-                    Divider()
-                    HStack {
-                        Text("Viviendas con electricidad")
+                    }
+                    .padding([.top, .horizontal])
+                    
+                Divider()
+                    
+                    HStack(alignment: .center){
+                        Text("Con electricidad")
                             .font(.caption)
                             .foregroundStyle(.white)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(nil) // Allow text to wrap if needed
+                            .fixedSize(horizontal: false, vertical: true) // Ensure the text can grow vertically
+                        
                         Spacer()
+                        
                         if isLoading{
                             ProgressView()
                         }else{
@@ -251,18 +263,29 @@ struct MetricsView: View {
                                     .foregroundStyle(.white)
                             }
                         }
+                        
                         Text("%")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .opacity(0.5)
-                    }.padding([.top, .leading, .trailing])
-                        .padding(.bottom, 5.0)
+                        
+                    }
+                    .padding([.top, .leading, .trailing])
+                    .padding(.bottom, 5.0)
+                    
                     Divider()
-                    HStack {
-                        Text("Viviendas con agua entubada")
+                    
+                    HStack(alignment: .center){
+                        
+                        Text("Con agua entubada")
                             .font(.caption)
                             .foregroundStyle(.white)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(nil) // Allow text to wrap if needed
+                            .fixedSize(horizontal: false, vertical: true) // Ensure the text can grow vertically
+                        
                         Spacer()
+                        
                         if isLoading{
                             ProgressView()
                         }else{
@@ -275,18 +298,22 @@ struct MetricsView: View {
                                     .foregroundStyle(.white)
                             }
                         }
+                        
                         Text("%")
                             .font(.caption)
                             .foregroundStyle(.white)
                             .opacity(0.5)
-                    }.padding([.top, .leading, .trailing])
-                        .padding(.bottom, 5.0)
-                    
+                        
+                            
+                    }
+                    .padding()
                 }
-            }.frame(width: 200, height: 160)
+            }
+            .frame(width: 200, height: 160)
         }
     }
     
+    //MARK: FUNC: Distribucion de viviendas
     func DatosDemográficosSociales() -> some View {
         VStack {
             // Mostrar los resultados de los indicadores
@@ -310,10 +337,10 @@ struct MetricsView: View {
         }
     }
     
-    //MARK: ‼️FUNC:POBLACIÓN
+    //MARK: FUNC: Porcentaje pobreza ✅
     func PORCENTAJEPOBREZA() -> some View {
         VStack {
-            Text("PORCENTAJE")
+            Text("POBREZA")
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
@@ -325,15 +352,12 @@ struct MetricsView: View {
                     .foregroundStyle(.gray6)
                     .opacity(0.7)
                     .cornerRadius(15)
-                    HStack {
-                        Text("Pobreza")
-                            .font(.caption2)
-                            .foregroundStyle(.white)
-                            .padding(.leading, 3.0)
-                        Spacer()
+                
+                HStack(spacing: 5){
                         Image(systemName: "percent")
                             .foregroundStyle(.teal)
                             .bold()
+                    
                         if isLoading{
                             ProgressView()
                         }else{
@@ -351,17 +375,17 @@ struct MetricsView: View {
                             }*/
                         }
                         
-                    }.padding(3.0)
-                    
-                
-            }.frame(width: 140, height: 50)
+                    }
+                .padding()
+            }
+            .frame(width: 140, height: 50)
         }
     }
     
-    //MARK: ‼️FUNC:POBLACIÓN
+    //MARK: FUNC: Porcentaje pobreza ✅
     func PORCENTAJEinundada() -> some View {
         VStack{
-            Text("PORCENTAJE")
+            Text("ÁREA INUNDADA")
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
@@ -372,21 +396,15 @@ struct MetricsView: View {
                     .foregroundStyle(.gray6)
                     .opacity(0.7)
                     .cornerRadius(15)
-                    HStack{
-                        Text("Área inundada")
-                            .font(.caption2)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.white)
-                            
-//                            .padding(.leading, 3.0)
-                            
-                        Spacer()
+                HStack(spacing: 5){
                         Image(systemName: "percent")
                             .foregroundStyle(.teal)
                             .bold()
+                        
                         if isLoading{
                             ProgressView()
-                        }else{
+                            
+                        } else {
                             Text("85.42")
                                 .font(.callout)
                                 .fontWeight(.semibold)
@@ -400,11 +418,10 @@ struct MetricsView: View {
                                     .foregroundStyle(.white)
                             }*/
                         }
-                        
-                    }.padding(3.0)
-                    
-                
-            }.frame(width: 140, height: 50)
+                    }
+                    .padding()
+            }
+            .frame(width: 140, height: 50)
         }
     }
     
@@ -416,7 +433,6 @@ struct MetricsView: View {
                 .foregroundStyle(.white)
                 .opacity(0.5)
                 .lineLimit(1)
-//                .padding(.horizontal)
                 
             ZStack {
                 Rectangle()
@@ -459,7 +475,6 @@ struct MetricsView: View {
                 .foregroundStyle(.white)
                 .opacity(0.5)
                 .lineLimit(1)
-//                .padding(.horizontal)
                 
             ZStack {
                 Rectangle()
