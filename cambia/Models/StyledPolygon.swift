@@ -9,6 +9,6 @@ import MapKit
 
 class StyledPolygon: MKPolygon {
     var fillColor: UIColor = UIColor.red.withAlphaComponent(0.5)
-    var strokeColor: UIColor = UIColor.blue
-    var lineWidth: CGFloat = 2.0
+    var strokeColor: UIColor = UIColor.white
+    var lineWidth: CGFloat = 1.0
 }

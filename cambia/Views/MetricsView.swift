@@ -32,35 +32,43 @@ struct MetricsView: View {
 
     var body: some View {
         NavigationStack {
-            HStack {
-                VStack {
-                    VStack(alignment: .center) {
-                        HStack(alignment: .top) {
+            HStack{
+                VStack(spacing: 10){
+                    VStack (alignment:.center, spacing: 10){
+                        HStack(alignment:.top, spacing: 10){
                             DISTRIBUCIONDEVIVIENDAS()
-                            VStack(alignment: .center) {
-                                HStack(alignment: .top) {
+                            
+                            VStack(alignment: .center, spacing: 10){
+                                HStack(alignment:.top, spacing: 10){
                                     DENSIDADPOBLACIONAL()
                                     POBLACIONTOTAL()
                                 }
-                                HStack(alignment: .center) {
+                                
+                                HStack(alignment:.center , spacing: 10){
                                     PORCENTAJEPOBREZA()
-                                        .padding(.trailing, 5.0)
                                     PORCENTAJEinundada()
-                                        .padding(.leading, 10.0)
                                 }
                             }
                         }
-                        HStack(alignment: .top) {
+                        
+                        HStack (alignment: .top, spacing: 10){
                             SERVICIOSBASICOS()
-                            VStack(alignment: .center) {
+                            
+                            VStack(alignment:.center, spacing: 10){
                                 SUPERFICIEDELACIUDAD()
                                 AREAINUNDADA()
                             }
                         }
-                        HStack(alignment: .top) {
+                        HStack (alignment: .top, spacing: 10){
                             PRECIPITACIONES()
                             PELIGRODEINUNDACION()
                         }
+                        
+                        /*if isLoading{
+                            ProgressView()
+                        }else{
+                            DatosDemográficosSociales()
+                        }*/
                     }
                     .padding()
                     Spacer()
@@ -74,7 +82,7 @@ struct MetricsView: View {
             loadData()
         }
     }
-
+  
     // MARK: - Función para cargar los datos usando InegiDataManager
     func loadData() {
         isLoading = true
@@ -241,7 +249,8 @@ struct MetricsView: View {
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
-            
+                .lineLimit(1)
+          
             ZStack {
                 Rectangle()
                     .foregroundStyle(.gray6)
@@ -265,6 +274,10 @@ struct MetricsView: View {
                         Text("Hospital más cercano a:")
                             .font(.caption)
                             .foregroundStyle(.white)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(nil) // Allow text to wrap if needed
+                            .fixedSize(horizontal: false, vertical: true) // Ensure the text can grow vertically
+                        
                         Spacer()
                         if metricsViewModel.nearestHospitalDistance > 0 {
                             Text(formatter.string(from: NSNumber(value: metricsViewModel.nearestHospitalDistance))! + " Km")
@@ -293,7 +306,12 @@ struct MetricsView: View {
                         Text("No. en un radio de 10 km:")
                             .font(.caption)
                             .foregroundStyle(.white)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(nil) // Allow text to wrap if needed
+                            .fixedSize(horizontal: false, vertical: true) // Ensure the text can grow vertically
+                        
                         Spacer()
+
                         Text("\(metricsViewModel.numberOfHospitalsInRadius) hospitales")
                             .font(.headline)
                             .fontWeight(.semibold)
@@ -340,6 +358,7 @@ struct MetricsView: View {
     func PORCENTAJEinundada() -> some View {
         VStack {
             Text("PORCENTAJE ÁREA INUNDADA")
+
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
@@ -349,6 +368,7 @@ struct MetricsView: View {
                     .foregroundStyle(.gray6)
                     .opacity(0.7)
                     .cornerRadius(15)
+
                 
                 HStack {
                     Text("Área Inundada")
@@ -381,7 +401,8 @@ struct MetricsView: View {
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
-            
+                .lineLimit(1)
+               
             ZStack {
                 Rectangle()
                     .foregroundStyle(.gray6)

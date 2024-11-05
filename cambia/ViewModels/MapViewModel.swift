@@ -130,6 +130,7 @@ class MapViewModel: ObservableObject {
 
         for object in geoJSONObjects {
             if let feature = object as? MKGeoJSONFeature {
+
                 var fillColor: UIColor = .red.withAlphaComponent(0.5)
                 var strokeColor: UIColor = .blue
                 var lineWidth: CGFloat = 2.0

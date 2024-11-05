@@ -122,8 +122,8 @@ struct MapViewRepresentable: UIViewRepresentable {
                 return renderer
             } else if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
-                renderer.strokeColor = UIColor.blue
-                renderer.lineWidth = 2.0
+                renderer.strokeColor = UIColor.white
+                renderer.lineWidth = 1.0
                 return renderer
             } else if let pointAnnotation = overlay as? MKPointAnnotation {
                 let renderer = MKMarkerAnnotationView(annotation: pointAnnotation, reuseIdentifier: nil)
