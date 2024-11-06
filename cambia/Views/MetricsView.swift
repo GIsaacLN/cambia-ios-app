@@ -33,13 +33,10 @@ struct MetricsView: View {
     var body: some View {
         //HStack principal, divide la sección de métricas del mapa - Metricas | Mapa
         HStack{
-            
             //VStack de Métricas
-            VStack (alignment:.center, spacing: 10){
-                
+            VStack(spacing: 10){
                 //Primera hilera de métricas (INEGI - Municipio/Ciudad)
                 HStack(alignment:.top, spacing: 10){
-                    
                     distrubucionViviendas()
                     
                     VStack(spacing: 10){
@@ -56,26 +53,23 @@ struct MetricsView: View {
                 }
                 
                 //Segunda hilera de métricas (Inundaciones)
-                VStack(alignment: .leading ,spacing: 10){
+                HStack(alignment:.top, spacing: 10){
+                    recuadroPrecipitacion()
                     
-                    HStack(alignment: .top, spacing: 10){
-                        recuadroPrecipitacion()
-                        
-                        areaInundada()
-                    }
-                    
-                    HStack(alignment: .top, spacing: 10){
-                        areaInundadaPorcentaje()
-                        
-                        
-                        indiceInundacion()
-                    }
+                    indiceInundacion()
                 }
                 
-                //Tercera hilera de métricas (Servicios - hospitales)
-                HStack(spacing: 10){
+                
+                //Tercera hilera de métricas (Inundaciones pt.2)
+                HStack(alignment: .top, spacing: 10){
+                    areaInundada()
+                    
+                    areaInundadaPorcentaje()
+                }
+                
+                //Cuarta hilera de métricas (Servicios - hospitales)
+                HStack(alignment: .top, spacing: 10){
                     recuadroHospitales()
-                    Spacer()
                 }
                 
                 Spacer()
@@ -128,7 +122,7 @@ struct MetricsView: View {
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
-                .lineLimit(1)
+                
             ZStack {
                 Rectangle()
                     .foregroundStyle(.gray6)
@@ -145,6 +139,7 @@ struct MetricsView: View {
                             .foregroundStyle(.white)
                             .padding(.bottom)
                     }
+                    
                     HStack{
                         Image(systemName: icon)
                             .resizable()
@@ -162,7 +157,7 @@ struct MetricsView: View {
                 .padding(.horizontal)
                 .padding(.top)
             }
-            .frame(width: 140, height: 90)
+            .frame(width: 170, height: 90)
         }
     }
     
@@ -181,9 +176,7 @@ struct MetricsView: View {
                     .cornerRadius(20)
                 
                 HStack {
-                    Text(subtitle)
-                        .font(.caption2)
-                        .foregroundStyle(.white)
+                    Spacer()
                     
                     if isLoading{
                         ProgressView()
@@ -194,15 +187,19 @@ struct MetricsView: View {
                             .foregroundStyle(.white)
                             .padding(.bottom)
                     }
-                        Text(unit)
-                            .font(.caption)
-                            .foregroundStyle(.white)
-                            .opacity(0.5)
+                    
+                    
+                     Spacer()
+                    
+                    Text(unit)
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .opacity(0.5)
                 }
                 .padding(.horizontal)
                 .padding(.top)
             }
-            .frame(width: 140, height: 45)
+            .frame(width: 170, height: 56)
         }
     }
     
@@ -269,7 +266,7 @@ struct MetricsView: View {
                 }
                 .padding()
             }
-            .frame(width: 200, height: 160)
+            .frame(width: 220 , height: 180)
         }
     }
     
@@ -289,9 +286,9 @@ struct MetricsView: View {
         if let data = metricsViewModel.inegiData,
            let value = data.indicators["poblacionTotal"],
            let formattedValue = formatter.string(from: NSNumber(value: value)) {
-            RecuadroChico(subtitle: String("POBLACIÓN TOTAL") , formattedValue: formattedValue, unit: String(""))
-        }else {
-            RecuadroChico(subtitle: String("POBLACIÓN TOTAL") , formattedValue: String("N/A"), unit: String("Personas"))
+            RecuadroMediano(subtitle: String("POBLACIÓN TOTAL") , formattedValue: formattedValue, unit: String("Personas"), icon: "person.fill")
+        } else {
+            RecuadroMediano(subtitle: String("POBLACIÓN TOTAL") , formattedValue: String("N/A"), unit: String("Personas"), icon: "person.fill")
         }
     }
     
@@ -299,19 +296,62 @@ struct MetricsView: View {
     func areaCiudad() -> some View {
         if let area = metricsViewModel.cityArea,
            let formattedValue = formatter.string(from: NSNumber(value: area)) {
-            RecuadroMediano(subtitle: String("SUPERFICIE DE LA CIUDAD") , formattedValue: formattedValue, unit: String("Km²"), icon: String("circle.circle"))
+            RecuadroChico(subtitle: String("SUPERFICIE DE LA CIUDAD") , formattedValue: formattedValue, unit: String("Km²"))
         }else {
-            RecuadroMediano(subtitle: String("SUPERFICIE DE LA CIUDAD") , formattedValue: String("N/A"), unit: String("Km²"), icon: String("circle.circle"))
+            RecuadroChico(subtitle: String("") , formattedValue: String("N/A"), unit: String("Km²"))
         }
     }
     
     /// Vista recuadro area propensa a inundaciones (km2)
     func areaInundada() -> some View {
-        if let inundatedArea = metricsViewModel.inundatedArea,
-           let formattedValue = formatter.string(from: NSNumber(value: inundatedArea)) {
-            RecuadroMediano(subtitle: String("ÁREA INUNDADA") , formattedValue: formattedValue, unit: String("Km²"), icon: String("water.waves"))
-        }else {
-            RecuadroMediano(subtitle: String("ÁREA INUNDADA") , formattedValue: "N/A", unit: String("Km²"), icon: String("water.waves"))
+        VStack {
+            Text("SUPERFICIE PROPENSAS A INUNDACIONES")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+            
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                
+                VStack {
+                    if let inundatedArea = metricsViewModel.inundatedArea,
+                       let formattedValue = formatter.string(from: NSNumber(value: inundatedArea)){
+                        Text(formattedValue)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.bottom)
+                    }else{
+                        Text("N/A")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.bottom)
+                    }
+                    
+                    HStack{
+                        Image(systemName: "water.waves")
+                            .resizable()
+                            .foregroundStyle(.teal)
+                            .scaledToFit()
+                            .frame(height: 27)
+                            .padding(.bottom, 10)
+                        
+                        Spacer()
+                        
+                        Text("Km²")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top)
+            }
+            .frame(width: 285, height: 90)
         }
     }
     
@@ -399,39 +439,13 @@ struct MetricsView: View {
     
     /// Vista recuadro porcentaje pobreza
     func indicePobrezaPorcentaje() -> some View {
-        VStack {
-            Text("POBREZA")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.gray6)
-                    .opacity(0.7)
-                    .cornerRadius(15)
-                
-                HStack {
-                    Text("Pobreza")
-                        .font(.caption2)
-                        .foregroundStyle(.white)
-                    Spacer()
-                    Text("85.42 %") // Placeholder
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                }
-                .padding()
-            }
-            .frame(width: 140, height: 50)
-        }
+        RecuadroChico(subtitle: "PORCENTAJE DE POBREZA", formattedValue: "89.455", unit: "%")
     }
     
     /// Vista recuadro Porcentaje de Área Inundada
     func areaInundadaPorcentaje() -> some View {
         VStack {
             Text("PORCENTAJE ÁREA INUNDADA")
-
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
@@ -442,28 +456,46 @@ struct MetricsView: View {
                     .opacity(0.7)
                     .cornerRadius(15)
 
-                
-                HStack {
-                    Text("Área Inundada")
-                        .font(.caption2)
-                        .foregroundStyle(.white)
-                    Spacer()
-                    if let floodPercentage = metricsViewModel.floodZonePercentage,
-                       let formattedValue = formatter.string(from: NSNumber(value: floodPercentage)) {
-                        Text(formattedValue + " %")
-                            .font(.callout)
-                            .fontWeight(.semibold)
+                VStack{
+                    Text("Porcentaje de área propensa a inundación")
+                            .font(.caption)
                             .foregroundStyle(.white)
-                    } else {
-                        Text("N/A")
-                            .font(.callout)
-                            .fontWeight(.semibold)
+                    
+                    
+                    HStack{
+                        Image(systemName: "water.waves")
+                            .resizable()
+                            .foregroundStyle(.teal)
+                            .scaledToFit()
+                            .frame(height: 27)
+                            .padding(.bottom, 10)
+                        
+                        Spacer()
+                        
+                        if let floodPercentage = metricsViewModel.floodZonePercentage,
+                           let formattedValue = formatter.string(from: NSNumber(value: floodPercentage)) {
+                            Text(formattedValue + " %")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                                .padding(.trailing)
+                        } else {
+                            Text("100.00")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                                .padding(.trailing)
+                        }
+                        
+                        Text("Km²")
+                            .font(.caption)
                             .foregroundStyle(.white)
+                            .opacity(0.5)
                     }
                 }
                 .padding()
             }
-            .frame(width: 140, height: 50)
+            .frame(width: 280, height: 90)
         }
     }
     
@@ -514,46 +546,8 @@ struct MetricsView: View {
                 .padding(.horizontal)
                 .padding(.top)
             }
-            .frame(width: 140, height: 90)
+            .frame(width: 170, height: 90)
         }
-        /*VStack {
-            Text("PELIGRO DE INUNDACIÓN")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.gray6)
-                    .opacity(0.7)
-                    .cornerRadius(20)
-                
-                VStack {
-                    HStack {
-                        Image(systemName: "water.waves.and.arrow.trianglehead.down.trianglebadge.exclamationmark")
-                            .foregroundStyle(.teal)
-                        
-                        if let floodRiskLevel = metricsViewModel.floodRiskLevel {
-                            Text(floodRiskLevel)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white)
-                        } else {
-                            Text("N/A")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    Text("Nivel")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .opacity(0.5)
-                }
-                .padding()
-            }
-            .frame(width: 140, height: 90)
-        }*/
     }
     
     ///Vista recuadro Precipitaciones
@@ -627,7 +621,7 @@ struct MetricsView: View {
                 }
                 .padding()
             }
-            .frame(width: 370, height: 90)
+            .frame(width: 400, height: 90)
         }
     }
 }
