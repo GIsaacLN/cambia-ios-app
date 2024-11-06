@@ -44,17 +44,17 @@ class MapViewModel: ObservableObject {
         // Initialize available layers
         setupAvailableLayers()
     }
-
+    
     // MARK: - Layer Setup
     func setupAvailableLayers() {
         availableLayers = [
-            MapLayer(name: "Flood Zones", type: .geoJSON(floodZonesFile)),
-            MapLayer(name: "Landslide Zones", type: .geoJSON(landslideZonesFile)),
-            MapLayer(name: "Tsunami Zones", type: .geoJSON(tsunamiZonesFile)),
-            MapLayer(name: "Active Volcanoes", type: .geoJSON(volcanoZonesFile)),
-            MapLayer(name: "Hospitals", type: .pointsOfInterest("Hospital")),
-            MapLayer(name: "Police Stations", type: .pointsOfInterest("Police")),
-            MapLayer(name: "Fire Stations", type: .pointsOfInterest("Fire Station"))
+            MapLayer(name: "Riesgo de Inundaciones", type: .geoJSON(floodZonesFile)),
+            MapLayer(name: "Zonas de Deslizamiento de Tierra", type: .geoJSON(landslideZonesFile)),
+            MapLayer(name: "Riesgo de Tsunami", type: .geoJSON(tsunamiZonesFile)),
+            MapLayer(name: "Volcanes Activos", type: .geoJSON(volcanoZonesFile)),
+            MapLayer(name: "Hospitales", type: .pointsOfInterest("Hospital")),
+            MapLayer(name: "Estaciones de Policias", type: .pointsOfInterest("Police")),
+            MapLayer(name: "Estaciones de Bomberos", type: .pointsOfInterest("Fire Station"))
         ]
     }
 
