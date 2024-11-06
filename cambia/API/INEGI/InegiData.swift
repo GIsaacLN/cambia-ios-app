@@ -34,8 +34,8 @@ struct InegiDataResponse: Codable {
                 switch serie.indicador {
                 case IndicatorType.poblacionTotal.rawValue:
                     indicators["poblacionTotal"] = obsValue
-                case IndicatorType.dencidad.rawValue:
-                    indicators["dencidad"] = obsValue
+                case IndicatorType.densidad.rawValue:
+                    indicators["densidad"] = obsValue
                 case IndicatorType.viviendasConAgua.rawValue:
                     indicators["viviendasConAgua"] = obsValue
                 case IndicatorType.viviendasConElectricidad.rawValue:

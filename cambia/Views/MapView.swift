@@ -13,6 +13,8 @@ import MapKit
 struct MapView: View {
     // MARK: - Observed Object
     @ObservedObject var viewModel: MapViewModel
+    
+    @EnvironmentObject var municipalidadModel: CiudadMunicipioViewModel
 
     // MARK: - Body
     var body: some View {
@@ -37,7 +39,7 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            viewModel.showUserLocationTrigger = true
+                            viewModel.recenter(to: municipalidadModel.selectedCiudadMunicipio.municipios ?? .AlvaroObregon)
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)
@@ -122,20 +124,24 @@ struct LayerSelectionView: View {
     @ObservedObject var viewModel: MapViewModel
 
     var body: some View {
-        //VStack {
-           
             List {
                 ForEach(viewModel.availableLayers) { layer in
                     Button(action: {
                         viewModel.toggleLayer(layer)
                     }) {
                         HStack {
+                            if viewModel.selectedLayers.contains(layer) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.cyan)
+                                    .padding(.trailing)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundColor(.white)
+                                    .padding(.trailing)
+                            }
+                            
                             Text(layer.name)
                             Spacer()
-                            if viewModel.selectedLayers.contains(layer) {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
-                            }
                         }
                     }
                 }
@@ -144,18 +150,5 @@ struct LayerSelectionView: View {
             .listStyle(.plain)
             .cornerRadius(20)
             .scrollDisabled(true)
-            /*
-            Button(action: {
-                viewModel.showLayerSelection = false
-            }) {
-                Text("Done")
-                    .bold()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color("gray5"))
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }*/
-        //}
     }
 }

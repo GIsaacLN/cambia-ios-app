@@ -31,6 +31,7 @@ class MapViewModel: ObservableObject {
     @Published var selectedLayers: [MapLayer] = []
     @Published var availableLayers: [MapLayer] = []
     @Published var showLayerSelection: Bool = false
+    
 
     // MARK: - Initialization
     init() {
@@ -132,14 +133,31 @@ class MapViewModel: ObservableObject {
             if let feature = object as? MKGeoJSONFeature {
 
                 var fillColor: UIColor = .red.withAlphaComponent(0.5)
-                var strokeColor: UIColor = .blue
-                var lineWidth: CGFloat = 2.0
+                var strokeColor: UIColor = .white
+                let lineWidth: CGFloat = 1.0
 
                 // Personalización de colores según el tipo de capa
                 switch fileName {
                 case floodZonesFile:
-                    fillColor = .blue.withAlphaComponent(0.3)
-                    strokeColor = .blue
+                    if let propertiesData = feature.properties,
+                       let properties = try? JSONSerialization.jsonObject(with: propertiesData, options: []) as? [String: Any] {
+                        if let dangerLevel = properties["PELIGRO_IN"] as? String {
+                            switch dangerLevel {
+                            case "Muy bajo":
+                                fillColor = UIColor.green.withAlphaComponent(0.5)
+                            case "Bajo":
+                                fillColor = UIColor.yellow.withAlphaComponent(0.5)
+                            case "Medio":
+                                fillColor = UIColor.orange.withAlphaComponent(0.5)
+                            case "Alto":
+                                fillColor = UIColor.red.withAlphaComponent(0.5)
+                            case "Muy alto":
+                                fillColor = UIColor.black.withAlphaComponent(0.5)
+                            default:
+                                fillColor = UIColor.gray.withAlphaComponent(0.5)
+                            }
+                        }
+                    }
                 case landslideZonesFile:
                     fillColor = .brown.withAlphaComponent(0.4)
                     strokeColor = .brown
@@ -208,6 +226,22 @@ class MapViewModel: ObservableObject {
                 completion([])
             }
         }
+    }
+    
+    // MARK:  - Recenter on municipality
+    func recenter(to municipio: Municipio) {
+        // Obtener las coordenadas del municipio utilizando el enum
+        let coordinates = municipio.coordinates
+        
+        // Crear una nueva región centrada en el municipio con un nivel de zoom adecuado
+        let newRegion = MKCoordinateRegion(
+            center: coordinates,
+            latitudinalMeters: 5000, // 1000 metros de altura
+            longitudinalMeters: 5000 // 1000 metros de anchura
+        )
+        
+        // Actualizar la región del mapa para centrarse en el nuevo municipio
+        self.region = newRegion
     }
 }
 

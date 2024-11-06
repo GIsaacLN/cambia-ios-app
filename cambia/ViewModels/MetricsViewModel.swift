@@ -84,7 +84,7 @@ class MetricsViewModel: ObservableObject {
             } else {
                 floodRiskPrediction = riskLabel
             }
-            0
+            
         } catch {
             floodRiskPrediction = "Error en la predicción"
             print("Error al realizar la predicción: \(error)")

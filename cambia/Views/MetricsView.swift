@@ -41,7 +41,7 @@ struct MetricsView: View {
                             VStack(alignment: .center, spacing: 10){
                                 HStack(alignment:.top, spacing: 10){
                                     if let data = metricsViewModel.inegiData,
-                                       let value = data.indicators["dencidad"],
+                                       let value = data.indicators["densidad"],
                                        let formattedValue = formatter.string(from: NSNumber(value: value)) {
                                         RecuadroMediano(subtitle: String("DENSIDAD POBLACIONAL") , formattedValue: formattedValue, unit: String("Hab/Km²"), icon: String("person.3.fill"))
                                     }
@@ -98,7 +98,7 @@ struct MetricsView: View {
                 MapView(viewModel: mapViewModel)
                     .padding()
             }
-            .background(Color.gray4.edgesIgnoringSafeArea(.all))
+            .background(Color.gray5.edgesIgnoringSafeArea(.all))
         }
         .onAppear {
             loadData()
@@ -118,7 +118,7 @@ struct MetricsView: View {
                 IndicatorType.viviendasConAgua.rawValue,
                 IndicatorType.viviendasConElectricidad.rawValue,
                 IndicatorType.poblacionTotal.rawValue,
-                IndicatorType.dencidad.rawValue
+                IndicatorType.densidad.rawValue
             ]
             manager.fetchData(indicators: indicators, ciudad: viewModel.selectedCiudadMunicipio.ciudad.rawValue, municipio: viewModel.selectedCiudadMunicipio.municipios?.rawValue) { data in
                 if let dat = data {
