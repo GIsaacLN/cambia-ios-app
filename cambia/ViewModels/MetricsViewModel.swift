@@ -9,8 +9,8 @@ class MetricsViewModel: ObservableObject {
     @Published var travelTimeToNearestHospital: Int = 0
     @Published var numberOfHospitalsInRadius: Int = 0
     @Published var floodZonePercentage: Double? = nil
-    @Published var cityArea: Double? = 100000.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
-    @Published var inundatedArea: Double? = 5200.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+    @Published var cityArea: Double? = 0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+    @Published var inundatedArea: Double? = 0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
     @Published var floodRiskLevel: String? = nil
     @Published var hourlyPrecipitation: Double? = 50.0 // Umbral de precipitación en mm o poner los de la CDMX para la demo
     @Published var annualPrecipitation: Double? = 840.0 // Promedio anual en mm o poner los de la CDMX para la demo
