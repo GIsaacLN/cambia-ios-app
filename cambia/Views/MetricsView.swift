@@ -40,8 +40,17 @@ struct MetricsView: View {
                             
                             VStack(alignment: .center, spacing: 10){
                                 HStack(alignment:.top, spacing: 10){
-                                    DENSIDADPOBLACIONAL()
-                                    POBLACIONTOTAL()
+                                    if let data = metricsViewModel.inegiData,
+                                       let value = data.indicators["dencidad"],
+                                       let formattedValue = formatter.string(from: NSNumber(value: value)) {
+                                        RecuadroMediano(subtitle: String("DENSIDAD POBLACIONAL") , formattedValue: formattedValue, unit: String("Hab/Km²"), icon: String("person.3.fill"))
+                                    }
+                                    if let data = metricsViewModel.inegiData,
+                                       let value = data.indicators["poblacionTotal"],
+                                       let formattedValue = formatter.string(from: NSNumber(value: value)) {
+                                        RecuadroMediano(subtitle: String("POBLACIÓN TOTAL") , formattedValue: formattedValue, unit: String("Personas"), icon: String("person.fill"))
+                                    }
+                                    //POBLACIONTOTAL()
                                 }
                                 
                                 HStack(alignment:.center , spacing: 10){
@@ -52,11 +61,24 @@ struct MetricsView: View {
                         }
                         
                         HStack (alignment: .top, spacing: 10){
+                            
                             SERVICIOSBASICOS()
                             
                             VStack(alignment:.center, spacing: 10){
-                                SUPERFICIEDELACIUDAD()
-                                AREAINUNDADA()
+                                if let area = metricsViewModel.cityArea,
+                                   let formattedValue = formatter.string(from: NSNumber(value: area)) {
+                                    RecuadroMediano(subtitle: String("SUPERFICIE DE LA CIUDAD") , formattedValue: formattedValue, unit: String("Km²"), icon: String("circle.circle"))
+                                }else {
+                                    RecuadroMediano(subtitle: String("SUPERFICIE DE LA CIUDAD") , formattedValue: String("N/A"), unit: String("Km²"), icon: String("circle.circle"))
+                                }
+                                if let inundatedArea = metricsViewModel.inundatedArea,
+                                                                   let formattedValue = formatter.string(from: NSNumber(value: inundatedArea)) {
+                                                                    RecuadroMediano(subtitle: String("ÁREA INUNDADA") , formattedValue: formattedValue, unit: String("Km²"), icon: String("water.waves"))
+                                }else {
+                                    RecuadroMediano(subtitle: String("ÁREA INUNDADA") , formattedValue: "N/A", unit: String("Km²"), icon: String("water.waves"))
+                                    
+                                }
+                               // AREAINUNDADA()
                             }
                         }
                         HStack (alignment: .top, spacing: 10){
@@ -76,9 +98,12 @@ struct MetricsView: View {
                 MapView(viewModel: mapViewModel)
                     .padding()
             }
-            .background(Color.gray.edgesIgnoringSafeArea(.all))
+            .background(Color.gray4.edgesIgnoringSafeArea(.all))
         }
         .onAppear {
+            loadData()
+        }
+        .onChange(of: viewModel.selectedCiudadMunicipio.municipios) { oldValue, newValue in
             loadData()
         }
     }
@@ -108,6 +133,53 @@ struct MetricsView: View {
     }
     
     // Indicadores específicos de INEGI y del modelo de métricas
+    
+    
+    
+    func RecuadroMediano(subtitle: String, formattedValue : String, unit: String,icon: String) -> some View {
+        VStack {
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+                .lineLimit(1)
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(20)
+                
+                VStack {
+                    if isLoading{
+                        ProgressView()
+                    }else{
+                        Text(formattedValue)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.bottom)
+                    }
+                    HStack{
+                        Image(systemName: icon)
+                            .resizable()
+                            .foregroundStyle(.teal)
+                            .scaledToFit()
+                            .frame(height: 27)
+                            .padding(.bottom, 10)
+                        Spacer()
+                        Text(unit)
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top)
+            }
+            .frame(width: 140, height: 90)
+        }
+    }
+    
     
     // Distribución de Viviendas (viviendas con electricidad y agua entubada)
     func DISTRIBUCIONDEVIVIENDAS() -> some View {
@@ -171,74 +243,6 @@ struct MetricsView: View {
                 .padding()
             }
             .frame(width: 200, height: 160)
-        }
-    }
-    
-    // Densidad Poblacional
-    func DENSIDADPOBLACIONAL() -> some View {
-        VStack {
-            Text("DENSIDAD POBLACIONAL")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.gray6)
-                    .opacity(0.7)
-                    .cornerRadius(20)
-                
-                VStack {
-                    if let data = metricsViewModel.inegiData,
-                       let value = data.indicators["dencidad"],
-                       let formattedValue = formatter.string(from: NSNumber(value: value)) {
-                        Text(formattedValue)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                    }
-                    Text("Hab/Km²")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .opacity(0.5)
-                }
-                .padding()
-            }
-            .frame(width: 140, height: 90)
-        }
-    }
-    
-    // Población Total
-    func POBLACIONTOTAL() -> some View {
-        VStack {
-            Text("POBLACIÓN TOTAL")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.gray6)
-                    .opacity(0.7)
-                    .cornerRadius(20)
-                
-                VStack {
-                    if let data = metricsViewModel.inegiData,
-                       let value = data.indicators["poblacionTotal"],
-                       let formattedValue = formatter.string(from: NSNumber(value: value)) {
-                        Text(formattedValue)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                    }
-                    Text("Personas")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .opacity(0.5)
-                }
-                .padding()
-            }
-            .frame(width: 140, height: 90)
         }
     }
     
@@ -320,7 +324,7 @@ struct MetricsView: View {
                 }
                 .padding()
             }
-            .frame(width: 370, height: 200)
+            .frame(width: 370, height: 215)
         }
     }
     
@@ -394,15 +398,14 @@ struct MetricsView: View {
         }
     }
     
-    // Superficie de la Ciudad
-    func SUPERFICIEDELACIUDAD() -> some View {
+    // Peligro de Inundación
+    func PELIGRODEINUNDACION() -> some View {
         VStack {
-            Text("SUPERFICIE DE LA CIUDAD")
+            Text("PELIGRO DE INUNDACIÓN")
                 .font(.caption2)
                 .foregroundStyle(.white)
                 .opacity(0.5)
                 .lineLimit(1)
-               
             ZStack {
                 Rectangle()
                     .foregroundStyle(.gray6)
@@ -410,70 +413,41 @@ struct MetricsView: View {
                     .cornerRadius(20)
                 
                 VStack {
-                    if let area = metricsViewModel.cityArea,
-                       let formattedValue = formatter.string(from: NSNumber(value: area)) {
-                        Text(formattedValue)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                    } else {
-                        Text("N/A")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
+                    if isLoading{
+                        ProgressView()
+                    }else{
+                        if let floodRiskLevel = metricsViewModel.floodRiskLevel {
+                            Text(floodRiskLevel)
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        } else {
+                            Text("N/A")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                        }
                     }
-                    Text("Km²")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .opacity(0.5)
+                    HStack{
+                        Image(systemName: "water.waves.and.arrow.trianglehead.down.trianglebadge.exclamationmark")
+                            .resizable()
+                            .foregroundStyle(.teal)
+                            .scaledToFit()
+                            .frame(height: 27)
+                            .padding(.bottom, 10)
+                        Spacer()
+                        Text("Nivel")
+                            .font(.caption)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                    }
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top)
             }
             .frame(width: 140, height: 90)
         }
-    }
-    
-    // Área Inundada
-    func AREAINUNDADA() -> some View {
-        VStack {
-            Text("ÁREA INUNDADA")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.gray6)
-                    .opacity(0.7)
-                    .cornerRadius(20)
-                
-                VStack {
-                    if let inundatedArea = metricsViewModel.inundatedArea,
-                       let formattedValue = formatter.string(from: NSNumber(value: inundatedArea)) {
-                        Text(formattedValue)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                    } else {
-                        Text("N/A")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                    }
-                    Text("Km²")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .opacity(0.5)
-                }
-                .padding()
-            }
-            .frame(width: 140, height: 90)
-        }
-    }
-    
-    // Peligro de Inundación
-    func PELIGRODEINUNDACION() -> some View {
-        VStack {
+        /*VStack {
             Text("PELIGRO DE INUNDACIÓN")
                 .font(.caption2)
                 .foregroundStyle(.white)
@@ -510,7 +484,7 @@ struct MetricsView: View {
                 .padding()
             }
             .frame(width: 140, height: 90)
-        }
+        }*/
     }
     
     // Precipitaciones

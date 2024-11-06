@@ -55,7 +55,7 @@ struct AnalysisView: View {
                 Spacer()
             }
             .padding()
-            .background(Color.black.opacity(0.8).edgesIgnoringSafeArea(.all))
+            .background(Color.gray4.edgesIgnoringSafeArea(.all))
         }
         .onAppear {
             metricsViewModel.performPrediction()
