@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUICore
 
-struct InegiData: Codable {
+struct InegiData: Codable, Equatable{
     let city: String
     let municipio: String
     var indicators: [String: Double]

@@ -3,31 +3,46 @@ import MapKit
 import Combine
 import CoreML
 
+
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var nearestHospitalDistance: Double = 0.0
     @Published var travelTimeToNearestHospital: Int = 0
     @Published var numberOfHospitalsInRadius: Int = 0
-    @Published var floodZonePercentage: Double? = nil
-    @Published var cityArea: Double? = 0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
-    @Published var inundatedArea: Double? = 0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+    
+    @Published var cityArea: Double? = 0
+    @Published var inundatedArea: Double? = 0
+    @Published var populationVulnerability: Int? = nil
+    @Published var vulnerabilityIndex: String? = nil
+    @Published var floodHazardLevel: String? = nil
+    @Published var threshold12h: Double? = nil
+    
     @Published var floodRiskLevel: String? = nil
-    @Published var hourlyPrecipitation: Double? = 50.0 // Umbral de precipitación en mm o poner los de la CDMX para la demo
-    @Published var annualPrecipitation: Double? = 840.0 // Promedio anual en mm o poner los de la CDMX para la demo
-    @Published var floodRiskPrediction: String = "No calculado" // Resultado de la predicción
+    @Published var hourlyPrecipitation: Double? = 50.0
+    @Published var annualPrecipitation: Double? = 840.0
+    @Published var floodRiskPrediction: String = "No calculado"
     @Published var inegiData: InegiData?
     
-    // Reference to MapViewModel to access map data
+    private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
     private var mapViewModel: MapViewModel
+    private var ciudadMunicipioViewModel: CiudadMunicipioViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var floodRiskModel: FloodRiskPredictor? // Modelo ML
+    private var floodRiskModel: FloodRiskPredictor?
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel) {
+    init(mapViewModel: MapViewModel, ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
         self.mapViewModel = mapViewModel
-        loadModel() // Cargar el modelo ML al inicializar
+        self.ciudadMunicipioViewModel = ciudadMunicipioViewModel
+        loadModel()
 
-        // Observe changes in selected layers and map data
+        // Observe changes in selected city/municipality to update cityArea and inundatedArea
+        ciudadMunicipioViewModel.$selectedCiudadMunicipio
+            .sink { [weak self] _ in
+                self?.updateMetricsForSelectedMunicipio()
+                self?.loadInegiData()
+            }
+            .store(in: &cancellables)
+
         mapViewModel.$selectedLayers
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
@@ -43,6 +58,8 @@ class MetricsViewModel: ObservableObject {
         mapViewModel.$userLocation
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
+        
+        updateMetricsForSelectedMunicipio() // Set initial values
     }
     
     // MARK: - Load ML Model
@@ -54,72 +71,78 @@ class MetricsViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Perform Prediction
-    func performPrediction() {
-        guard let densidadPoblacional = floodZonePercentage,
-              let areaInundada = inundatedArea,
-              let precipitacionAnual = annualPrecipitation else {
-            floodRiskPrediction = "Datos insuficientes para la predicción"
-            return
-        }
+    // MARK: - Load INEGI Data
+    func loadInegiData() {
+        // Ensure `inegiDataManager` loads data for the selected municipality
+        guard let selectedMunicipio = ciudadMunicipioViewModel.selectedCiudadMunicipio.municipios else { return }
+        
+        let indicators = [
+            IndicatorType.densidad.rawValue,
+            IndicatorType.poblacionTotal.rawValue,
+            IndicatorType.viviendasConAgua.rawValue,
+            IndicatorType.viviendasConElectricidad.rawValue
+        ]
 
-        // Convertimos el nivel de riesgo a un string basado en "High" o "Low"
-        let nivelRiesgo = floodRiskLevel == "High" ? "1" : "0"
-
-        do {
-            // Crear la entrada para el modelo con `NivelRiesgo` como `String`
-            let prediction = try floodRiskModel?.prediction(
-                DensidadPoblacional: Int64(densidadPoblacional),
-                PrecipitacionAnual: Int64(precipitacionAnual),
-                AreaInundada: areaInundada,
-                NivelRiesgo: nivelRiesgo
-            )
-            
-            // Asignar el resultado de la predicción basado en `FloodRisk`
-            let riskLabel = prediction?.FloodRisk == 1 ? "Alto riesgo de inundación" : "Bajo riesgo de inundación"
-            
-            // Si deseas mostrar también la probabilidad, puedes extraerla del diccionario
-            if let probability = prediction?.FloodRiskProbability[prediction?.FloodRisk ?? 0] {
-                floodRiskPrediction = "\(riskLabel) (Probabilidad: \(String(format: "%.2f", probability * 100))%)"
-            } else {
-                floodRiskPrediction = riskLabel
+        inegiDataManager.fetchData(
+            indicators: indicators,
+            ciudad: ciudadMunicipioViewModel.selectedCiudadMunicipio.ciudad.rawValue,
+            municipio: selectedMunicipio.rawValue
+        ) { [weak self] inegiData in
+            DispatchQueue.main.async {
+                self?.inegiData = inegiData
             }
-            
-        } catch {
-            floodRiskPrediction = "Error en la predicción"
-            print("Error al realizar la predicción: \(error)")
         }
     }
 
-
     // MARK: - Metrics Calculation
     func updateMetrics() {
-        // Reset metrics
         nearestHospitalDistance = 0.0
         numberOfHospitalsInRadius = 0
-        floodZonePercentage = nil
         floodRiskLevel = nil
-        cityArea = 100000.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
-        inundatedArea = 5200.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
-        hourlyPrecipitation = 50.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
-        annualPrecipitation = 840.0 // Aquí hay que jalar los datos del inegi o poner los de la CDMX para la demo
+        cityArea = nil
+        inundatedArea = nil
+        hourlyPrecipitation = 50.0
+        annualPrecipitation = 840.0
 
         guard let userLocation = mapViewModel.userLocation else { return }
         let userCoordinate = userLocation.coordinate
         
-        // Update metrics for hospitals
         updateHospitalMetrics(userCoordinate: userCoordinate)
-        
-        // Update metrics for disaster risk zones
         updateRiskMetrics(fileType: floodZonesFile, metric: &floodRiskLevel, userCoordinate: userCoordinate, label: "Flood Risk")
+
+        updateMetricsForSelectedMunicipio()
         
-        // Update metrics based on Inegi data
-        updateInegiMetrics()
-        
-        // Perform prediction after updating metrics
         performPrediction()
     }
-    
+
+    private func updateMetricsForSelectedMunicipio() {
+        guard let selectedMunicipio = ciudadMunicipioViewModel.selectedCiudadMunicipio.municipios else { return }
+        
+        if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: jsonURL)
+                let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
+                
+                if let municipioFeature = geoJSON.features.first(where: { $0.properties.MUNICIPIO == selectedMunicipio.jsonFormattedName }) {
+                    cityArea = municipioFeature.properties.AREAKMKM
+                    inundatedArea = municipioFeature.properties.ÁREA_INUN
+                    populationVulnerability = municipioFeature.properties.IVI_POB20
+                    vulnerabilityIndex = municipioFeature.properties.IVI_VULNE
+                    floodHazardLevel = municipioFeature.properties.PELIGRO_IN
+                    threshold12h = municipioFeature.properties.UMBRAL12H
+                } else {
+                    print("Municipio no encontrado en el JSON.")
+                }
+            } catch {
+                print("Error al cargar o parsear el JSON: \(error)")
+            }
+        } else {
+            print("No se encontró el archivo inundacionmunicipio.json.")
+        }
+    }
+
+
+
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
         if let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
            mapViewModel.selectedLayers.contains(hospitalLayer),
@@ -127,7 +150,6 @@ class MetricsViewModel: ObservableObject {
 
             numberOfHospitalsInRadius = hospitalAnnotations.count
 
-            // Calculate nearest hospital distance
             var minDistance: CLLocationDistance = Double.greatestFiniteMagnitude
             for annotation in hospitalAnnotations {
                 let annotationLocation = CLLocation(latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude)
@@ -136,7 +158,7 @@ class MetricsViewModel: ObservableObject {
                     minDistance = distance
                 }
             }
-            nearestHospitalDistance = minDistance / 1000.0 // Convert to kilometers
+            nearestHospitalDistance = minDistance / 1000.0
         }
     }
 
@@ -160,27 +182,50 @@ class MetricsViewModel: ObservableObject {
             metric = "\(label): Not Available"
         }
     }
+    
+    // MARK: - Perform Prediction
+    func performPrediction() {
+        // Retrieve densidadPoblacional from INEGI data
+        guard let inegiDensidad = inegiData?.indicators["densidad"],
+              let areaInundada = inundatedArea,
+              let precipitacionAnual = annualPrecipitation,
+              let floodHazardLevel = floodHazardLevel else {
+            floodRiskPrediction = "Datos insuficientes para la predicción"
+            print("Datos insuficientes para la predicción. Current values - Densidad: \(String(describing: inegiData?.indicators["densidad"])), Área Inundada: \(String(describing: inundatedArea)), Precipitación Anual: \(String(describing: annualPrecipitation)), Nivel de Riesgo: \(String(describing: floodHazardLevel))")
+            return
+        }
 
-    private func updateInegiMetrics() {
-        guard let inegiData = inegiData else { return }
-        
-        // Densidad Poblacional
-        if let density = inegiData.indicators["densidad"] {
-            floodZonePercentage = density
+        // Use floodHazardLevel directly as NivelRiesgo
+        let nivelRiesgo: String
+        switch floodHazardLevel {
+        case "Muy alto", "Alto":
+            nivelRiesgo = "Alto"
+        case "Medio":
+            nivelRiesgo = "Medio"
+        default:
+            nivelRiesgo = "Bajo"
         }
-        
-        // Área de la Ciudad
-        if let area = inegiData.indicators["cityArea"] {
-            cityArea = area
+
+        do {
+            let prediction = try floodRiskModel?.prediction(
+                DensidadPoblacional: Int64(inegiDensidad),
+                PrecipitacionAnual: Int64(precipitacionAnual),
+                AreaInundada: areaInundada,
+                NivelRiesgo: nivelRiesgo
+            )
+            
+            let riskLabel = prediction?.FloodRisk == 1 ? "Alto riesgo de inundación" : "Bajo riesgo de inundación"
+            
+            if let probability = prediction?.FloodRiskProbability[prediction?.FloodRisk ?? 0] {
+                floodRiskPrediction = "\(riskLabel) (Probabilidad: \(String(format: "%.2f", probability * 100))%)"
+            } else {
+                floodRiskPrediction = riskLabel
+            }
+            
+        } catch {
+            floodRiskPrediction = "Error en la predicción"
+            print("Error al realizar la predicción: \(error)")
         }
-        
-        // Área Inundada
-        if let inundated = inegiData.indicators["inundatedArea"] {
-            inundatedArea = inundated
-        }
-        
-        // Viviendas con Agua y Electricidad
-        let waterCoverage = inegiData.indicators["viviendasConAgua"]
-        let electricityCoverage = inegiData.indicators["viviendasConElectricidad"]
     }
+
 }

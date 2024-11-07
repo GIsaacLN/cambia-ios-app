@@ -14,8 +14,8 @@ struct cambiaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView().environmentObject(viewModel)
+            ContentView(ciudadMunicipioViewModel: viewModel)
+                .environmentObject(viewModel)
         }
-        
     }
 }

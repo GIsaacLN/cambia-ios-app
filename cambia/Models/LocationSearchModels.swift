@@ -18,7 +18,7 @@ enum Ciudad: String, CaseIterable {
     case ciudadDeMexico = "07000009"
 }
 
-enum Municipio: String, CaseIterable{
+enum Municipio: String, CaseIterable {
     case azcapotzalco = "0002"
     case BenitoJuarez = "0014"
     case Coyoacan = "0003"
@@ -35,7 +35,29 @@ enum Municipio: String, CaseIterable{
     case VenustianoCarranza = "0017"
     case Xochimilco = "0013"
     case AlvaroObregon = "0010"
+    
+    var jsonFormattedName: String {
+        switch self {
+        case .azcapotzalco: return "AZCAPOTZALCO"
+        case .BenitoJuarez: return "BENITO JUAREZ"
+        case .Coyoacan: return "COYOACAN"
+        case .CuajimalpaDeMorelos: return "CUAJIMALPA DE MORELOS"
+        case .Cuauhtemoc: return "CUAUHTEMOC"
+        case .GustavoAMadero: return "GUSTAVO A MADERO"
+        case .Iztacalco: return "IZTACALCO"
+        case .Iztapalapa: return "IZTAPALAPA"
+        case .LaMagdalenaContreras: return "LA MAGDALENA CONTRERAS"
+        case .MiguelHidalgo: return "MIGUEL HIDALGO"
+        case .MilpaAlta: return "MILPA ALTA"
+        case .Tlalpan: return "TLALPAN"
+        case .Tlahuac: return "TLAHUAC"
+        case .VenustianoCarranza: return "VENUSTIANO CARRANZA"
+        case .Xochimilco: return "XOCHIMILCO"
+        case .AlvaroObregon: return "ALVARO OBREGON"
+        }
+    }
 }
+
 
 
 

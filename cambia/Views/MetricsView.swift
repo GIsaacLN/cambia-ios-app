@@ -24,10 +24,10 @@ struct MetricsView: View {
         return formatter
     }
 
-    init() {
+    init(ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, ciudadMunicipioViewModel: ciudadMunicipioViewModel))
     }
 
     var body: some View {
@@ -439,7 +439,39 @@ struct MetricsView: View {
     
     /// Vista recuadro porcentaje pobreza
     func indicePobrezaPorcentaje() -> some View {
-        RecuadroChico(subtitle: "PORCENTAJE DE POBREZA", formattedValue: "89.455", unit: "%")
+        VStack {
+            Text("POBREZA")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .opacity(0.5)
+            
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.gray6)
+                    .opacity(0.7)
+                    .cornerRadius(15)
+                
+                HStack {
+                    Text("Vulnerabilidad")
+                        .font(.caption2)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    if let vulnerabilityValue = metricsViewModel.vulnerabilityIndex {
+                        Text(vulnerabilityValue)
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    } else {
+                        Text("N/A")
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    }
+                }
+                .padding()
+            }
+            .frame(width: 170, height: 56)
+        }
     }
     
     /// Vista recuadro Porcentaje de Área Inundada
@@ -472,8 +504,8 @@ struct MetricsView: View {
                         
                         Spacer()
                         
-                        if let floodPercentage = metricsViewModel.floodZonePercentage,
-                           let formattedValue = formatter.string(from: NSNumber(value: floodPercentage)) {
+                      if let floodPercentage = metricsViewModel.inundatedArea,
+                       let formattedValue = formatter.string(from: NSNumber(value: floodPercentage)) {
                             Text(formattedValue + " %")
                                 .font(.callout)
                                 .fontWeight(.semibold)
@@ -517,7 +549,7 @@ struct MetricsView: View {
                     if isLoading{
                         ProgressView()
                     }else{
-                        if let floodRiskLevel = metricsViewModel.floodRiskLevel {
+                        if let floodRiskLevel = metricsViewModel.floodHazardLevel {
                             Text(floodRiskLevel)
                                 .font(.title3)
                                 .fontWeight(.semibold)
