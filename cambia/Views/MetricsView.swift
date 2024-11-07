@@ -24,10 +24,10 @@ struct MetricsView: View {
         return formatter
     }
 
-    init() {
+    init(ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, ciudadMunicipioViewModel: ciudadMunicipioViewModel))
     }
 
     var body: some View {
@@ -412,14 +412,21 @@ struct MetricsView: View {
                     .cornerRadius(15)
                 
                 HStack {
-                    Text("Pobreza")
+                    Text("Vulnerabilidad")
                         .font(.caption2)
                         .foregroundStyle(.white)
                     Spacer()
-                    Text("85.42 %") // Placeholder
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
+                    if let vulnerabilityValue = metricsViewModel.vulnerabilityIndex {
+                        Text(vulnerabilityValue)
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    } else {
+                        Text("N/A")
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    }
                 }
                 .padding()
             }
@@ -448,7 +455,7 @@ struct MetricsView: View {
                         .font(.caption2)
                         .foregroundStyle(.white)
                     Spacer()
-                    if let floodPercentage = metricsViewModel.floodZonePercentage,
+                    if let floodPercentage = metricsViewModel.inundatedArea,
                        let formattedValue = formatter.string(from: NSNumber(value: floodPercentage)) {
                         Text(formattedValue + " %")
                             .font(.callout)
@@ -485,7 +492,7 @@ struct MetricsView: View {
                     if isLoading{
                         ProgressView()
                     }else{
-                        if let floodRiskLevel = metricsViewModel.floodRiskLevel {
+                        if let floodRiskLevel = metricsViewModel.floodHazardLevel {
                             Text(floodRiskLevel)
                                 .font(.title3)
                                 .fontWeight(.semibold)

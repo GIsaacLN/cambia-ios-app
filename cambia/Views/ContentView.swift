@@ -14,10 +14,10 @@ struct ContentView: View {
     @State private var filteredCities: [Ciudad] = []
     @State private var filteredMunicipios: [Municipio] = []
     
-    init() {
+    init(ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, ciudadMunicipioViewModel: ciudadMunicipioViewModel))
     }
 
     var body: some View {
@@ -27,7 +27,7 @@ struct ContentView: View {
                 // Pestaña de Métricas
                 Tab("Métricas", systemImage: "play") {
                     ZStack {
-                        MetricsView()
+                        MetricsView(ciudadMunicipioViewModel: viewModel)
                         if isSearchActive {
                             VStack {
                                 HStack {
@@ -95,8 +95,4 @@ struct ContentView: View {
             filteredMunicipios = Municipio.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

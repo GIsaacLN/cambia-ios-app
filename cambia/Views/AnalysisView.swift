@@ -44,7 +44,7 @@ struct AnalysisView: View {
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.7))
                     
-                    MetricRow(title: "Densidad Poblacional", value: metricsViewModel.floodZonePercentage.map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
+                    MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
                     MetricRow(title: "Área Inundada", value: metricsViewModel.inundatedArea.map { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
                     MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
                     MetricRow(title: "Distancia al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.nearestHospitalDistance)) km")

@@ -6,18 +6,7 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		C897B5412CD967A7000F1DEE /* tsunamis.json in Resources */ = {isa = PBXBuildFile; fileRef = C897B53E2CD967A7000F1DEE /* tsunamis.json */; };
-		C897B5432CD967A7000F1DEE /* inundacionmunicipio.json in Resources */ = {isa = PBXBuildFile; fileRef = C897B53C2CD967A7000F1DEE /* inundacionmunicipio.json */; };
-		C897B5442CD967A7000F1DEE /* laderas.json in Resources */ = {isa = PBXBuildFile; fileRef = C897B53D2CD967A7000F1DEE /* laderas.json */; };
-		C897B5452CD967A7000F1DEE /* volcanesactivos.json in Resources */ = {isa = PBXBuildFile; fileRef = C897B53F2CD967A7000F1DEE /* volcanesactivos.json */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		C897B53C2CD967A7000F1DEE /* inundacionmunicipio.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = inundacionmunicipio.json; sourceTree = "<group>"; };
-		C897B53D2CD967A7000F1DEE /* laderas.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = laderas.json; sourceTree = "<group>"; };
-		C897B53E2CD967A7000F1DEE /* tsunamis.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = tsunamis.json; sourceTree = "<group>"; };
-		C897B53F2CD967A7000F1DEE /* volcanesactivos.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = volcanesactivos.json; sourceTree = "<group>"; };
 		C8B8C00B2CDA72360089D116 /* cambia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cambia.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -53,22 +42,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C897B5402CD967A7000F1DEE /* yeisons 2 */ = {
-			isa = PBXGroup;
-			children = (
-				C897B53C2CD967A7000F1DEE /* inundacionmunicipio.json */,
-				C897B53D2CD967A7000F1DEE /* laderas.json */,
-				C897B53E2CD967A7000F1DEE /* tsunamis.json */,
-				C897B53F2CD967A7000F1DEE /* volcanesactivos.json */,
-			);
-			path = "yeisons 2";
-			sourceTree = "<group>";
-		};
 		EC99A8262CB482DC008F41F7 = {
 			isa = PBXGroup;
 			children = (
 				EC99A8312CB482DD008F41F7 /* cambia */,
-				C897B5402CD967A7000F1DEE /* yeisons 2 */,
 				C8B8C00B2CDA72360089D116 /* cambia.app */,
 			);
 			sourceTree = "<group>";
@@ -137,10 +114,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C897B5412CD967A7000F1DEE /* tsunamis.json in Resources */,
-				C897B5432CD967A7000F1DEE /* inundacionmunicipio.json in Resources */,
-				C897B5442CD967A7000F1DEE /* laderas.json in Resources */,
-				C897B5452CD967A7000F1DEE /* volcanesactivos.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
