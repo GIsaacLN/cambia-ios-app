@@ -68,7 +68,7 @@ struct Properties: Codable {
     let IVI_ESTAD: String?
     let IVI_POB20: Int?
     let UMBRAL12H: Double?
-    let IVI_VULNE: String?
+    let IVI__VULNE: String?
     let MUNICIPIO: String
     let UMBRAL: Double?
     let AREAKMKM: Double?
@@ -77,7 +77,7 @@ struct Properties: Codable {
     let PELIGRO_IN: String?
 
     private enum CodingKeys: String, CodingKey {
-        case NOM_MUN, OID_1, CVE_MPIO, IVI_ESTAD, IVI_POB20, UMBRAL12H, IVI_VULNE, MUNICIPIO, UMBRAL, AREAKMKM, ÁREA_INUN, PORCENTA_1, PELIGRO_IN
+        case NOM_MUN, OID_1, CVE_MPIO, IVI_ESTAD, IVI_POB20, UMBRAL12H, IVI__VULNE, MUNICIPIO, UMBRAL, AREAKMKM, ÁREA_INUN, PORCENTA_1, PELIGRO_IN
     }
 
     init(from decoder: Decoder) throws {
@@ -87,7 +87,7 @@ struct Properties: Codable {
         IVI_ESTAD = try? container.decode(String.self, forKey: .IVI_ESTAD)  // Make optional
         IVI_POB20 = try? container.decode(Int.self, forKey: .IVI_POB20)    // Make optional
         UMBRAL12H = try? container.decode(Double.self, forKey: .UMBRAL12H)
-        IVI_VULNE = try? container.decode(String.self, forKey: .IVI_VULNE)  // Make optional
+        IVI__VULNE = try? container.decode(String.self, forKey: .IVI__VULNE)  // Make optional
         MUNICIPIO = try container.decode(String.self, forKey: .MUNICIPIO)
         UMBRAL = try? container.decode(Double.self, forKey: .UMBRAL)         // Make optional
         AREAKMKM = try? container.decode(Double.self, forKey: .AREAKMKM)

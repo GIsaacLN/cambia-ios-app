@@ -127,7 +127,7 @@ class MetricsViewModel: ObservableObject {
                     cityArea = municipioFeature.properties.AREAKMKM
                     inundatedArea = municipioFeature.properties.ÁREA_INUN
                     populationVulnerability = municipioFeature.properties.IVI_POB20
-                    vulnerabilityIndex = municipioFeature.properties.IVI_VULNE
+                    vulnerabilityIndex = municipioFeature.properties.IVI__VULNE
                     floodHazardLevel = municipioFeature.properties.PELIGRO_IN
                     threshold12h = municipioFeature.properties.UMBRAL12H
                 } else {
