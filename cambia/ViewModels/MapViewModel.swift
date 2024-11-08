@@ -35,8 +35,12 @@ class MapViewModel: ObservableObject {
     var isFloodLayerSelected: Bool {
         selectedLayers.contains { $0.name == "Riesgo de Inundaciones" }
     }
-
-
+    
+    // Dictionaries to associate overlays and annotations with layers
+    var layerOverlays: [UUID: [MKOverlay]] = [:]
+    var layerAnnotations: [UUID: [MKAnnotation]] = [:]
+    
+    
     // MARK: - Initialization
     init() {
         // Initialize the default region (Ciudad de México)
@@ -57,7 +61,7 @@ class MapViewModel: ObservableObject {
             MapLayer(name: "Riesgo de Tsunami", type: .geoJSON(tsunamiZonesFile)),
             MapLayer(name: "Volcanes Activos", type: .geoJSON(volcanoZonesFile)),
             MapLayer(name: "Hospitales", type: .pointsOfInterest("Hospital")),
-            MapLayer(name: "Estaciones de Policias", type: .pointsOfInterest("Police")),
+            MapLayer(name: "Estaciones de Policía", type: .pointsOfInterest("Police")),
             MapLayer(name: "Estaciones de Bomberos", type: .pointsOfInterest("Fire Station"))
         ]
     }
@@ -72,13 +76,9 @@ class MapViewModel: ObservableObject {
             addLayer(layer)
         }
     }
-
-    // Dictionaries to associate overlays and annotations with layers
-    var layerOverlays: [UUID: [MKOverlay]] = [:]
-    var layerAnnotations: [UUID: [MKAnnotation]] = [:]
-
+    
     // Modify addLayer and removeLayer methods
-    func addLayer(_ layer: MapLayer) {
+    private func addLayer(_ layer: MapLayer) {
         switch layer.type {
         case .geoJSON(let fileName):
             let newOverlays = loadGeoJSONOverlay(fileName: fileName)
@@ -93,8 +93,8 @@ class MapViewModel: ObservableObject {
             }
         }
     }
-
-    func removeLayer(_ layer: MapLayer) {
+    
+    private func removeLayer(_ layer: MapLayer) {
         if let overlaysToRemove = layerOverlays[layer.id] {
             overlays.removeAll { overlay in
                 overlaysToRemove.contains(where: { $0 === overlay })
@@ -110,7 +110,7 @@ class MapViewModel: ObservableObject {
     }
 
     // MARK: - Overlay Loading
-    func loadGeoJSONOverlay(fileName: String) -> [MKOverlay] {
+    private func loadGeoJSONOverlay(fileName: String) -> [MKOverlay] {
         var newOverlays: [MKOverlay] = []
 
         guard let jsonUrl = Bundle.main.url(forResource: fileName, withExtension: "json") else {
@@ -204,7 +204,7 @@ class MapViewModel: ObservableObject {
 
 
     // MARK: - Search Functionality
-    func search(for query: String, completion: @escaping ([MKAnnotation]) -> Void) {
+    private func search(for query: String, completion: @escaping ([MKAnnotation]) -> Void) {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.resultTypes = .pointOfInterest

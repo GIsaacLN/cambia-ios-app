@@ -6,23 +6,20 @@
 
 import Foundation
 
-
-enum InegiDataRequestErrorType{
+enum InegiDataRequestErrorType {
     case server
     case client
     case decode
-
 }
-struct InegiDataRequestErrorDetail{
+
+struct InegiDataRequestErrorDetail {
     let error: Error
     let type: InegiDataRequestErrorType
 }
 
-protocol InegiDataResponseDelegate{
+protocol InegiDataResponseDelegate {
     func reset()
-    func requestFaildwith(error: Error?, type: InegiDataRequestErrorType )
-        
-    
+    func requestFailed(with error: Error?, type: InegiDataRequestErrorType)
 }
 
 class InegiDataDelegate: InegiDataResponseDelegate, ObservableObject {
@@ -31,22 +28,18 @@ class InegiDataDelegate: InegiDataResponseDelegate, ObservableObject {
     @Published var errorDetail: InegiDataRequestErrorDetail? = nil
     
     func reset() {
-        DispatchQueue.main.async{
-            self.isErrorState = true
+        DispatchQueue.main.async {
+            self.isErrorState = false
             self.errorDetail = nil
         }
     }
     
-    func requestFaildwith(error: Error?, type: InegiDataRequestErrorType) {
-        DispatchQueue.main.async{
+    func requestFailed(with error: Error?, type: InegiDataRequestErrorType) {
+        DispatchQueue.main.async {
             self.isErrorState = true
             if let err = error {
                 self.errorDetail = InegiDataRequestErrorDetail(error: err, type: type)
             }
         }
     }
-    
-    
 }
-
-

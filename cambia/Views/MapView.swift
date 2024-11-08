@@ -39,7 +39,7 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            viewModel.recenter(to: municipalidadModel.selectedCiudadMunicipio.municipios ?? .AlvaroObregon)
+                            viewModel.recenter(to: municipalidadModel.selectedCiudadMunicipio.municipios ?? .alvaroObregon)
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)

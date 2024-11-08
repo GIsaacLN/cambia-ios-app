@@ -103,7 +103,7 @@ struct MetricsView: View {
                 IndicatorType.poblacionTotal.rawValue,
                 IndicatorType.densidad.rawValue
             ]
-            manager.fetchData(indicators: indicators, ciudad: viewModel.selectedCiudadMunicipio.ciudad.rawValue, municipio: viewModel.selectedCiudadMunicipio.municipios?.rawValue) { data in
+            manager.fetchData(indicators: indicators, estado: viewModel.selectedCiudadMunicipio.ciudad.rawValue, municipio: viewModel.selectedCiudadMunicipio.municipios?.rawValue) { data in
                 if let dat = data {
                     DispatchQueue.main.async {
                         isLoading = false

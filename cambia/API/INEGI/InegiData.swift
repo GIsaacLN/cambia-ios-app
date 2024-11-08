@@ -6,10 +6,9 @@
 //
 
 import Foundation
-import SwiftUICore
 
-struct InegiData: Codable, Equatable{
-    let city: String
+struct InegiData: Codable, Equatable {
+    let estado: String
     let municipio: String
     var indicators: [String: Double]
 }
@@ -25,7 +24,7 @@ struct InegiDataResponse: Codable {
         case series = "Series"
     }
     
-    func toInegiData(city: String, municipio: String) -> InegiData {
+    func toInegiData(estado: String, municipio: String) -> InegiData {
         var indicators = [String: Double]()
         
         for serie in series {
@@ -47,10 +46,8 @@ struct InegiDataResponse: Codable {
             }
         }
         
-        return InegiData(city: city, municipio: municipio, indicators: indicators)
+        return InegiData(estado: estado, municipio: municipio, indicators: indicators)
     }
-
-    
 }
 
 // Estructura para el header
@@ -112,4 +109,3 @@ struct Observation: Codable {
         case coberGeo = "COBER_GEO"
     }
 }
-

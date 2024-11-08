@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 enum IndicatorType: String, CaseIterable {
     case poblacionTotal = "1002000001"
@@ -14,95 +15,145 @@ enum IndicatorType: String, CaseIterable {
     case viviendasConElectricidad = "3114006001"
 }
 
-enum Ciudad: String, CaseIterable {
+enum Estado: String, CaseIterable {
     case ciudadDeMexico = "07000009"
 }
 
 enum Municipio: String, CaseIterable {
     case azcapotzalco = "0002"
-    case BenitoJuarez = "0014"
-    case Coyoacan = "0003"
-    case CuajimalpaDeMorelos = "0004"
-    case Cuauhtemoc = "002"
-    case GustavoAMadero = "0005"
-    case Iztacalco = "0006"
-    case Iztapalapa = "0007"
-    case LaMagdalenaContreras = "0008"
-    case MiguelHidalgo = "0016"
-    case MilpaAlta = "0009"
-    case Tlalpan = "0012"
-    case Tlahuac = "0011"
-    case VenustianoCarranza = "0017"
-    case Xochimilco = "0013"
-    case AlvaroObregon = "0010"
+    case benitoJuarez = "0014"
+    case coyoacan = "0003"
+    case cuajimalpaDeMorelos = "0004"
+    case cuauhtemoc = "002"
+    case gustavoAMadero = "0005"
+    case iztacalco = "0006"
+    case iztapalapa = "0007"
+    case laMagdalenaContreras = "0008"
+    case miguelHidalgo = "0016"
+    case milpaAlta = "0009"
+    case tlalpan = "0012"
+    case tlahuac = "0011"
+    case venustianoCarranza = "0017"
+    case xochimilco = "0013"
+    case alvaroObregon = "0010"
     
     var jsonFormattedName: String {
         switch self {
         case .azcapotzalco: return "AZCAPOTZALCO"
-        case .BenitoJuarez: return "BENITO JUAREZ"
-        case .Coyoacan: return "COYOACAN"
-        case .CuajimalpaDeMorelos: return "CUAJIMALPA DE MORELOS"
-        case .Cuauhtemoc: return "CUAUHTEMOC"
-        case .GustavoAMadero: return "GUSTAVO A MADERO"
-        case .Iztacalco: return "IZTACALCO"
-        case .Iztapalapa: return "IZTAPALAPA"
-        case .LaMagdalenaContreras: return "LA MAGDALENA CONTRERAS"
-        case .MiguelHidalgo: return "MIGUEL HIDALGO"
-        case .MilpaAlta: return "MILPA ALTA"
-        case .Tlalpan: return "TLALPAN"
-        case .Tlahuac: return "TLAHUAC"
-        case .VenustianoCarranza: return "VENUSTIANO CARRANZA"
-        case .Xochimilco: return "XOCHIMILCO"
-        case .AlvaroObregon: return "ALVARO OBREGON"
+        case .benitoJuarez: return "BENITO JUAREZ"
+        case .coyoacan: return "COYOACAN"
+        case .cuajimalpaDeMorelos: return "CUAJIMALPA DE MORELOS"
+        case .cuauhtemoc: return "CUAUHTEMOC"
+        case .gustavoAMadero: return "GUSTAVO A MADERO"
+        case .iztacalco: return "IZTACALCO"
+        case .iztapalapa: return "IZTAPALAPA"
+        case .laMagdalenaContreras: return "LA MAGDALENA CONTRERAS"
+        case .miguelHidalgo: return "MIGUEL HIDALGO"
+        case .milpaAlta: return "MILPA ALTA"
+        case .tlalpan: return "TLALPAN"
+        case .tlahuac: return "TLAHUAC"
+        case .venustianoCarranza: return "VENUSTIANO CARRANZA"
+        case .xochimilco: return "XOCHIMILCO"
+        case .alvaroObregon: return "ALVARO OBREGON"
+        }
+    }
+    
+    var coordinates: CLLocationCoordinate2D {
+        switch self {
+        case .azcapotzalco: return CLLocationCoordinate2D(latitude: 19.48698, longitude: -99.18594)
+        case .benitoJuarez: return CLLocationCoordinate2D(latitude: 19.3727, longitude: -99.1564)
+        case .coyoacan: return CLLocationCoordinate2D(latitude: 19.3467, longitude: -99.16174)
+        case .cuajimalpaDeMorelos: return CLLocationCoordinate2D(latitude: 19.3692, longitude: -99.29089)
+        case .cuauhtemoc: return CLLocationCoordinate2D(latitude: 19.44506, longitude: -99.14612)
+        case .gustavoAMadero: return CLLocationCoordinate2D(latitude: 19.4969, longitude: -99.1100)
+        case .iztacalco: return CLLocationCoordinate2D(latitude: 19.39528, longitude: -99.09778)
+        case .iztapalapa: return CLLocationCoordinate2D(latitude: 19.3574, longitude: -99.0671)
+        case .laMagdalenaContreras: return CLLocationCoordinate2D(latitude: 19.3333, longitude: -99.2139)
+        case .miguelHidalgo: return CLLocationCoordinate2D(latitude: 19.43411, longitude: -99.20024)
+        case .milpaAlta: return CLLocationCoordinate2D(latitude: 19.19251, longitude: -99.02317)
+        case .tlalpan: return CLLocationCoordinate2D(latitude: 19.29513, longitude: -99.16206)
+        case .tlahuac: return CLLocationCoordinate2D(latitude: 19.28689, longitude: -99.00507)
+        case .venustianoCarranza: return CLLocationCoordinate2D(latitude: 19.44361, longitude: -99.10499)
+        case .xochimilco: return CLLocationCoordinate2D(latitude: 19.25465, longitude: -99.10356)
+        case .alvaroObregon: return CLLocationCoordinate2D(latitude: 19.35867, longitude: -99.20329)
         }
     }
 }
 
-
-
-
-// Estructura que conecta ciudad con sus municipios
+// Structure connecting city with its municipalities
 struct CiudadMunicipios {
-    let ciudad: Ciudad
-    let municipios: [Municipio?]
+    let estado: Estado
+    let municipios: [Municipio]
 }
 
-// Definición de los municipios para cada ciudad
-let RelacionCiudadMunicipios: [CiudadMunicipios] = [
-    CiudadMunicipios(ciudad: .ciudadDeMexico, municipios: [
-        .azcapotzalco, .BenitoJuarez, .Coyoacan, .CuajimalpaDeMorelos, .Cuauhtemoc, .GustavoAMadero,
-        .Iztacalco, .Iztapalapa, .LaMagdalenaContreras, .MiguelHidalgo, .MilpaAlta, .Tlalpan,
-        .Tlahuac, .VenustianoCarranza, .Xochimilco, .AlvaroObregon
-    ])
+// Definition of municipalities for each city
+let relacionCiudadMunicipios: [CiudadMunicipios] = [
+    CiudadMunicipios(estado: .ciudadDeMexico, municipios: Municipio.allCases)
 ]
 
-// Estructura que conecta ciudad con sus municipios
+// Structure connecting selected city with its municipality
 struct SelectCiudadMunicipio {
-    var ciudad: Ciudad
+    var ciudad: Estado
     var municipios: Municipio?
-    init(ciudad: Ciudad, municipios: Municipio? = nil) {
+    
+    init(ciudad: Estado, municipios: Municipio? = nil) {
         self.ciudad = ciudad
         self.municipios = municipios
     }
 }
 
-// ViewModel que almacena un CityMunicipality observable
+// ViewModel storing an observable CityMunicipality
 class CiudadMunicipioViewModel: ObservableObject {
-    @Published var selectedCiudadMunicipio: SelectCiudadMunicipio = SelectCiudadMunicipio(ciudad: .ciudadDeMexico, municipios: .azcapotzalco) // Conformidad a Equatable
+    @Published var selectedCiudadMunicipio: SelectCiudadMunicipio = SelectCiudadMunicipio(ciudad: .ciudadDeMexico, municipios: .azcapotzalco)
     
-    // Función para actualizar el CityMunicipality en función de la ciudad seleccionada
-    func updateCityMunicipality(for ciudad: Ciudad, to municipio: Municipio?) {
+    // Function to update CityMunicipality based on selected city
+    func updateCityMunicipality(for ciudad: Estado, to municipio: Municipio?) {
         selectedCiudadMunicipio = SelectCiudadMunicipio(ciudad: ciudad, municipios: municipio)
     }
-    // Función para actualizar el CityMunicipality en función de la ciudad seleccionada
+    
+    // Function to update the municipality
     func updateMunicipality(to municipio: Municipio?) {
-        selectedCiudadMunicipio.municipios = municipio!
+        selectedCiudadMunicipio.municipios = municipio
     }
-    func textselectedCiudadMunicipio(for ciudad: Ciudad, to municipio: Municipio?)->String{
-        var text: String = "\(ciudad.displayName)"
+    
+    // Function to get the display text for selected city and municipality
+    func textSelectedCiudadMunicipio(for ciudad: Estado, to municipio: Municipio?) -> String {
+        var text = "\(ciudad.displayName)"
         if let mun = municipio {
-            text.append(String(", \(mun.displayName)"))
+            text.append(", \(mun.displayName)")
         }
         return text
+    }
+}
+
+// Extensions for display names
+extension Estado {
+    var displayName: String {
+        switch self {
+        case .ciudadDeMexico: return "Ciudad de México"
+        }
+    }
+}
+
+extension Municipio {
+    var displayName: String {
+        switch self {
+        case .azcapotzalco: return "Azcapotzalco"
+        case .benitoJuarez: return "Benito Juárez"
+        case .coyoacan: return "Coyoacán"
+        case .cuajimalpaDeMorelos: return "Cuajimalpa de Morelos"
+        case .cuauhtemoc: return "Cuauhtémoc"
+        case .gustavoAMadero: return "Gustavo A. Madero"
+        case .iztacalco: return "Iztacalco"
+        case .iztapalapa: return "Iztapalapa"
+        case .laMagdalenaContreras: return "La Magdalena Contreras"
+        case .miguelHidalgo: return "Miguel Hidalgo"
+        case .milpaAlta: return "Milpa Alta"
+        case .tlalpan: return "Tlalpan"
+        case .tlahuac: return "Tláhuac"
+        case .venustianoCarranza: return "Venustiano Carranza"
+        case .xochimilco: return "Xochimilco"
+        case .alvaroObregon: return "Álvaro Obregón"
+        }
     }
 }

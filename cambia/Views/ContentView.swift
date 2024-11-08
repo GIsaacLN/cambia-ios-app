@@ -11,7 +11,7 @@ struct ContentView: View {
     
     @State private var isSearchActive: Bool = false
     @State private var searchText: String = ""
-    @State private var filteredCities: [Ciudad] = []
+    @State private var filteredCities: [Estado] = []
     @State private var filteredMunicipios: [Municipio] = []
     
     init(ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
@@ -59,7 +59,7 @@ struct ContentView: View {
             }
             .tabViewStyle(.tabBarOnly)
             .preferredColorScheme(.dark)
-            .navigationTitle(viewModel.textselectedCiudadMunicipio(for: viewModel.selectedCiudadMunicipio.ciudad, to: viewModel.selectedCiudadMunicipio.municipios))
+            .navigationTitle(viewModel.textSelectedCiudadMunicipio(for: viewModel.selectedCiudadMunicipio.ciudad, to: viewModel.selectedCiudadMunicipio.municipios))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isSearchActive {
@@ -91,7 +91,7 @@ struct ContentView: View {
             filteredCities = []
             filteredMunicipios = []
         } else {
-            filteredCities = Ciudad.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
+            filteredCities = Estado.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
             filteredMunicipios = Municipio.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
         }
     }

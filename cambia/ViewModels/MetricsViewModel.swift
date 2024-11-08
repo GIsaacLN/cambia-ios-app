@@ -85,7 +85,7 @@ class MetricsViewModel: ObservableObject {
 
         inegiDataManager.fetchData(
             indicators: indicators,
-            ciudad: ciudadMunicipioViewModel.selectedCiudadMunicipio.ciudad.rawValue,
+            estado: ciudadMunicipioViewModel.selectedCiudadMunicipio.ciudad.rawValue,
             municipio: selectedMunicipio.rawValue
         ) { [weak self] inegiData in
             DispatchQueue.main.async {
@@ -123,13 +123,13 @@ class MetricsViewModel: ObservableObject {
                 let data = try Data(contentsOf: jsonURL)
                 let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
                 
-                if let municipioFeature = geoJSON.features.first(where: { $0.properties.MUNICIPIO == selectedMunicipio.jsonFormattedName }) {
-                    cityArea = municipioFeature.properties.AREAKMKM
-                    inundatedArea = municipioFeature.properties.ÁREA_INUN
-                    populationVulnerability = municipioFeature.properties.IVI_POB20
-                    vulnerabilityIndex = municipioFeature.properties.IVI__VULNE
-                    floodHazardLevel = municipioFeature.properties.PELIGRO_IN
-                    threshold12h = municipioFeature.properties.UMBRAL12H
+                if let municipioFeature = geoJSON.features.first(where: { $0.properties.municipio == selectedMunicipio.jsonFormattedName }) {
+                    cityArea = municipioFeature.properties.areaKm
+                    inundatedArea = municipioFeature.properties.areaInun
+                    populationVulnerability = municipioFeature.properties.iviPob20
+                    vulnerabilityIndex = municipioFeature.properties.iviVulne
+                    floodHazardLevel = municipioFeature.properties.peligroIn
+                    threshold12h = municipioFeature.properties.umbral12h
                 } else {
                     print("Municipio no encontrado en el JSON.")
                 }

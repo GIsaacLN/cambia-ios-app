@@ -62,44 +62,56 @@ enum Coordinates: Codable {
 
 
 struct Properties: Codable {
-    let NOM_MUN: String?
-    let OID_1: Int?
-    let CVE_MPIO: String?
-    let IVI_ESTAD: String?
-    let IVI_POB20: Int?
-    let UMBRAL12H: Double?
-    let IVI__VULNE: String?
-    let MUNICIPIO: String
-    let UMBRAL: Double?
-    let AREAKMKM: Double?
-    let ÁREA_INUN: Double?
-    let PORCENTA_1: Double?
-    let PELIGRO_IN: String?
-
+    let nomMun: String?
+    let oid1: Int?
+    let cveMpio: String?
+    let iviEstad: String?
+    let iviPob20: Int?
+    let umbral12h: Double?
+    let iviVulne: String?
+    let municipio: String
+    let umbral: Double?
+    let areaKm: Double?
+    let areaInun: Double?
+    let porcentaje: Double?
+    let peligroIn: String?
+    
     private enum CodingKeys: String, CodingKey {
-        case NOM_MUN, OID_1, CVE_MPIO, IVI_ESTAD, IVI_POB20, UMBRAL12H, IVI__VULNE, MUNICIPIO, UMBRAL, AREAKMKM, ÁREA_INUN, PORCENTA_1, PELIGRO_IN
+        case nomMun = "NOM_MUN"
+        case oid1 = "OID_1"
+        case cveMpio = "CVE_MPIO"
+        case iviEstad = "IVI_ESTAD"
+        case iviPob20 = "IVI_POB20"
+        case umbral12h = "UMBRAL12H"
+        case iviVulne = "IVI__VULNE"
+        case municipio = "MUNICIPIO"
+        case umbral = "UMBRAL"
+        case areaKm = "AREAKMKM"
+        case areaInun = "ÁREA_INUN"
+        case porcentaje = "PORCENTA_1"
+        case peligroIn = "PELIGRO_IN"
     }
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        NOM_MUN = try? container.decode(String.self, forKey: .NOM_MUN)
-        OID_1 = try? container.decode(Int.self, forKey: .OID_1)
-        IVI_ESTAD = try? container.decode(String.self, forKey: .IVI_ESTAD)  // Make optional
-        IVI_POB20 = try? container.decode(Int.self, forKey: .IVI_POB20)    // Make optional
-        UMBRAL12H = try? container.decode(Double.self, forKey: .UMBRAL12H)
-        IVI__VULNE = try? container.decode(String.self, forKey: .IVI__VULNE)  // Make optional
-        MUNICIPIO = try container.decode(String.self, forKey: .MUNICIPIO)
-        UMBRAL = try? container.decode(Double.self, forKey: .UMBRAL)         // Make optional
-        AREAKMKM = try? container.decode(Double.self, forKey: .AREAKMKM)
-        ÁREA_INUN = try? container.decode(Double.self, forKey: .ÁREA_INUN)
-        PORCENTA_1 = try? container.decode(Double.self, forKey: .PORCENTA_1) // Make optional
-        PELIGRO_IN = try? container.decode(String.self, forKey: .PELIGRO_IN) // Make optional
-
+        nomMun = try? container.decode(String.self, forKey: .nomMun)
+        oid1 = try? container.decode(Int.self, forKey: .oid1)
+        iviEstad = try? container.decode(String.self, forKey: .iviEstad)
+        iviPob20 = try? container.decode(Int.self, forKey: .iviPob20)
+        umbral12h = try? container.decode(Double.self, forKey: .umbral12h)
+        iviVulne = try? container.decode(String.self, forKey: .iviVulne)
+        municipio = try container.decode(String.self, forKey: .municipio)
+        umbral = try? container.decode(Double.self, forKey: .umbral)
+        areaKm = try? container.decode(Double.self, forKey: .areaKm)
+        areaInun = try? container.decode(Double.self, forKey: .areaInun)
+        porcentaje = try? container.decode(Double.self, forKey: .porcentaje)
+        peligroIn = try? container.decode(String.self, forKey: .peligroIn)
+        
         // Handle CVE_MPIO as either Int or String
-        if let intValue = try? container.decode(Int.self, forKey: .CVE_MPIO) {
-            CVE_MPIO = String(intValue)
+        if let intValue = try? container.decode(Int.self, forKey: .cveMpio) {
+            cveMpio = String(intValue)
         } else {
-            CVE_MPIO = try container.decode(String.self, forKey: .CVE_MPIO)
+            cveMpio = try? container.decode(String.self, forKey: .cveMpio)
         }
     }
 }
