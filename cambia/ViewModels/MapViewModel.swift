@@ -32,6 +32,10 @@ class MapViewModel: ObservableObject {
     @Published var availableLayers: [MapLayer] = []
     @Published var showLayerSelection: Bool = false
     
+    var isFloodLayerSelected: Bool {
+        selectedLayers.contains { $0.name == "Riesgo de Inundaciones" }
+    }
+
 
     // MARK: - Initialization
     init() {
@@ -143,26 +147,26 @@ class MapViewModel: ObservableObject {
                        let properties = try? JSONSerialization.jsonObject(with: propertiesData, options: []) as? [String: Any] {
                         if let dangerLevel = properties["PELIGRO_IN"] as? String {
                             switch dangerLevel {
-                            case "Muy bajo":
-                                fillColor = UIColor.green.withAlphaComponent(0.5)
-                            case "Bajo":
-                                fillColor = UIColor.yellow.withAlphaComponent(0.5)
-                            case "Medio":
-                                fillColor = UIColor.orange.withAlphaComponent(0.5)
-                            case "Alto":
-                                fillColor = UIColor.red.withAlphaComponent(0.5)
-                            case "Muy alto":
-                                fillColor = UIColor.black.withAlphaComponent(0.5)
-                            default:
-                                fillColor = UIColor.gray.withAlphaComponent(0.5)
+                                case "Muy bajo":
+                                    fillColor = UIColor.systemBlue.withAlphaComponent(0.6)
+                                case "Bajo":
+                                    fillColor = UIColor.systemYellow.withAlphaComponent(0.6)
+                                case "Medio":
+                                    fillColor = UIColor.systemOrange.withAlphaComponent(0.6)
+                                case "Alto":
+                                    fillColor = UIColor.systemRed.withAlphaComponent(0.6)
+                                case "Muy alto":
+                                    fillColor = UIColor.purple.withAlphaComponent(0.6)
+                                default:
+                                    fillColor = UIColor.gray.withAlphaComponent(0.6)
                             }
                         }
                     }
                 case landslideZonesFile:
-                    fillColor = .brown.withAlphaComponent(0.4)
+                    fillColor = .brown.withAlphaComponent(0.6)
                     strokeColor = .brown
                 case tsunamiZonesFile:
-                    fillColor = .cyan.withAlphaComponent(0.4)
+                    fillColor = .cyan.withAlphaComponent(0.6)
                     strokeColor = .cyan
                 case volcanoZonesFile:
                     fillColor = .red.withAlphaComponent(0.6)

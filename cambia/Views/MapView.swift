@@ -75,7 +75,14 @@ struct MapView: View {
                     .padding([.bottom, .trailing, .top], 16)
                 }
                 Spacer()
-                // MapScaleView can be added here if needed
+
+                if viewModel.isFloodLayerSelected {
+                    HStack {
+                        ColorScaleLegendView()
+                        Spacer()
+                    }
+                    .padding([.leading, .bottom], 16)
+                }
             }
             /*.overlay {
                 if viewModel.showLayerSelection {
@@ -151,4 +158,8 @@ struct LayerSelectionView: View {
             .cornerRadius(20)
             .scrollDisabled(true)
     }
+}
+
+#Preview{
+    MapView(viewModel: MapViewModel.init())
 }
