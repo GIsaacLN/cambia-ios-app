@@ -14,7 +14,7 @@ struct MapView: View {
     // MARK: - Observed Object
     @ObservedObject var viewModel: MapViewModel
     
-    @EnvironmentObject var municipalidadModel: CiudadMunicipioViewModel
+    @EnvironmentObject var municipalidadModel: EstadoMunicipioViewModel
 
     // MARK: - Body
     var body: some View {
@@ -39,7 +39,7 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            viewModel.recenter(to: municipalidadModel.selectedCiudadMunicipio.municipios ?? .alvaroObregon)
+                            viewModel.recenter(to: municipalidadModel.selectedEstadoMunicipio.municipios ?? .alvaroObregon)
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)

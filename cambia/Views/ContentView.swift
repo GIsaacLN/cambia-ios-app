@@ -5,7 +5,7 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    @EnvironmentObject var viewModel: CiudadMunicipioViewModel
+    @EnvironmentObject var viewModel: EstadoMunicipioViewModel
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var metricsViewModel: MetricsViewModel
     
@@ -14,10 +14,10 @@ struct ContentView: View {
     @State private var filteredCities: [Estado] = []
     @State private var filteredMunicipios: [Municipio] = []
     
-    init(ciudadMunicipioViewModel: CiudadMunicipioViewModel) {
+    init(estadoMunicipioViewModel: EstadoMunicipioViewModel) {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, ciudadMunicipioViewModel: ciudadMunicipioViewModel))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, estadoMunicipioViewModel: estadoMunicipioViewModel))
     }
 
     var body: some View {
@@ -27,12 +27,12 @@ struct ContentView: View {
                 // Pestaña de Métricas
                 Tab("Métricas", systemImage: "play") {
                     ZStack {
-                        MetricsView(ciudadMunicipioViewModel: viewModel)
+                        MetricsView(estadoMunicipioViewModel: viewModel)
                         if isSearchActive {
                             VStack {
                                 HStack {
                                     Spacer()
-                                    SearchlistView(
+                                    SearchListView(
                                         isSearching: $isSearchActive,
                                         searchText: $searchText,
                                         filteredCities: $filteredCities,
@@ -59,7 +59,7 @@ struct ContentView: View {
             }
             .tabViewStyle(.tabBarOnly)
             .preferredColorScheme(.dark)
-            .navigationTitle(viewModel.textSelectedCiudadMunicipio(for: viewModel.selectedCiudadMunicipio.ciudad, to: viewModel.selectedCiudadMunicipio.municipios))
+            .navigationTitle(viewModel.textSelectedEstadoMunicipio(for: viewModel.selectedEstadoMunicipio.estado, to: viewModel.selectedEstadoMunicipio.municipios))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isSearchActive {

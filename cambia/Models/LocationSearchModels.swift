@@ -17,6 +17,7 @@ enum IndicatorType: String, CaseIterable {
 
 enum Estado: String, CaseIterable {
     case ciudadDeMexico = "07000009"
+    case michoacan = ""
 }
 
 enum Municipio: String, CaseIterable {
@@ -81,44 +82,44 @@ enum Municipio: String, CaseIterable {
 }
 
 // Structure connecting city with its municipalities
-struct CiudadMunicipios {
+struct EstadoMunicipios {
     let estado: Estado
     let municipios: [Municipio]
 }
 
 // Definition of municipalities for each city
-let relacionCiudadMunicipios: [CiudadMunicipios] = [
-    CiudadMunicipios(estado: .ciudadDeMexico, municipios: Municipio.allCases)
+let relacionEstadoMunicipios: [EstadoMunicipios] = [
+    EstadoMunicipios(estado: .ciudadDeMexico, municipios: Municipio.allCases)
 ]
 
 // Structure connecting selected city with its municipality
-struct SelectCiudadMunicipio {
-    var ciudad: Estado
+struct SelectEstadoMunicipio {
+    var estado: Estado
     var municipios: Municipio?
     
-    init(ciudad: Estado, municipios: Municipio? = nil) {
-        self.ciudad = ciudad
+    init(estado: Estado, municipios: Municipio? = nil) {
+        self.estado = estado
         self.municipios = municipios
     }
 }
 
 // ViewModel storing an observable CityMunicipality
-class CiudadMunicipioViewModel: ObservableObject {
-    @Published var selectedCiudadMunicipio: SelectCiudadMunicipio = SelectCiudadMunicipio(ciudad: .ciudadDeMexico, municipios: .azcapotzalco)
+class EstadoMunicipioViewModel: ObservableObject {
+    @Published var selectedEstadoMunicipio: SelectEstadoMunicipio = SelectEstadoMunicipio(estado: .ciudadDeMexico, municipios: .azcapotzalco)
     
     // Function to update CityMunicipality based on selected city
-    func updateCityMunicipality(for ciudad: Estado, to municipio: Municipio?) {
-        selectedCiudadMunicipio = SelectCiudadMunicipio(ciudad: ciudad, municipios: municipio)
+    func updateCityMunicipality(for estado: Estado, to municipio: Municipio?) {
+        selectedEstadoMunicipio = SelectEstadoMunicipio(estado: estado, municipios: municipio)
     }
     
     // Function to update the municipality
     func updateMunicipality(to municipio: Municipio?) {
-        selectedCiudadMunicipio.municipios = municipio
+        selectedEstadoMunicipio.municipios = municipio
     }
     
     // Function to get the display text for selected city and municipality
-    func textSelectedCiudadMunicipio(for ciudad: Estado, to municipio: Municipio?) -> String {
-        var text = "\(ciudad.displayName)"
+    func textSelectedEstadoMunicipio(for estado: Estado, to municipio: Municipio?) -> String {
+        var text = "\(estado.displayName)"
         if let mun = municipio {
             text.append(", \(mun.displayName)")
         }
@@ -131,6 +132,7 @@ extension Estado {
     var displayName: String {
         switch self {
         case .ciudadDeMexico: return "Ciudad de México"
+        case .michoacan: return "Michoacán"
         }
     }
 }

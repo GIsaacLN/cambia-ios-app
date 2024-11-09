@@ -1,37 +1,20 @@
 //
-//  SearchView.swift
+//  SearchListView.swift
 //  cambia
 //
-//  Created by yatziri on 26/10/24.
+//  Created by Gustavo Isaac Lopez Nunez on 08/11/24.
 //
 
 import SwiftUI
-import MapKit
 
-struct SearchView: View {
-    @Binding var isSearching: Bool
-    @Binding var searchText: String
-    
-    var body: some View {
-        ZStack {
-            Color.gray6.opacity(0.7)
-                .cornerRadius(20)
-            TextField("\(Image(systemName: "magnifyingglass"))  Buscar Ciudad o Municipio", text: $searchText)
-                .padding(.horizontal)
-                .padding(.vertical, 7.5)
-        }
-        .padding()
-    }
-}
-
-// SearchlistView para mostrar los resultados de búsqueda
-struct SearchlistView: View {
+// SearchListView para mostrar los resultados de búsqueda
+struct SearchListView: View {
     @Binding var isSearching: Bool
     @Binding var searchText: String
     @Binding var filteredCities: [Estado]
     @Binding var filteredMunicipios: [Municipio]
     
-    @EnvironmentObject var viewModel: CiudadMunicipioViewModel
+    @EnvironmentObject var viewModel: EstadoMunicipioViewModel
     
     var body: some View {
         let totalItems = filteredCities.count + filteredMunicipios.count
