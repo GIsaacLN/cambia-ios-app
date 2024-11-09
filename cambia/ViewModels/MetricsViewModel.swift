@@ -3,7 +3,6 @@ import MapKit
 import Combine
 import CoreML
 
-
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var nearestHospitalDistance: Double = 0.0
@@ -22,13 +21,9 @@ class MetricsViewModel: ObservableObject {
     @Published var annualPrecipitation: Double? = 840.0
     @Published var floodRiskPrediction: String = "No calculado"
     @Published var inegiData: InegiData? {
-        didSet {
-            // Update metrics that depend on INEGI data here
-            updateMetrics()
-        }
+        didSet { updateMetrics() }
     }
 
-    private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
     private var mapViewModel: MapViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
@@ -37,26 +32,9 @@ class MetricsViewModel: ObservableObject {
     init(mapViewModel: MapViewModel) {
         self.mapViewModel = mapViewModel
         loadModel()
-        
-        // Observe changes in selectedMunicipio and update metrics
-        
-        mapViewModel.$selectedLayers
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-
-        mapViewModel.$annotations
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-
-        mapViewModel.$overlays
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        mapViewModel.$userLocation
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
+        observeMapViewModel()
     }
-
+    
     // MARK: - Load ML Model
     private func loadModel() {
         do {
@@ -65,16 +43,30 @@ class MetricsViewModel: ObservableObject {
             print("Error al cargar el modelo ML: \(error)")
         }
     }
+
+    // MARK: - Observers
+    private func observeMapViewModel() {
+        mapViewModel.$selectedLayers
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+        
+        mapViewModel.$annotations
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+        
+        mapViewModel.$overlays
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+        
+        mapViewModel.$userLocation
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Metrics Calculation
     func updateMetrics() {
-        nearestHospitalDistance = 0.0
-        numberOfHospitalsInRadius = 0
-        floodRiskLevel = nil
-        cityArea = nil
-        inundatedArea = nil
-        hourlyPrecipitation = 50.0
-        annualPrecipitation = 840.0
-
+        resetMetrics()
+        
         guard let userLocation = mapViewModel.userLocation else { return }
         let userCoordinate = userLocation.coordinate
         
@@ -83,23 +75,31 @@ class MetricsViewModel: ObservableObject {
         
         performPrediction()
     }
-
+    
+    private func resetMetrics() {
+        nearestHospitalDistance = 0.0
+        numberOfHospitalsInRadius = 0
+        floodRiskLevel = "Not Available"
+        cityArea = 0.0
+        inundatedArea = 0.0
+        hourlyPrecipitation = 50.0
+        annualPrecipitation = 840.0
+    }
+    
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
-        if let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
-           mapViewModel.selectedLayers.contains(hospitalLayer),
-           let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id] {
-
-            numberOfHospitalsInRadius = hospitalAnnotations.count
-
-            var minDistance: CLLocationDistance = Double.greatestFiniteMagnitude
-            for annotation in hospitalAnnotations {
-                let annotationLocation = CLLocation(latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude)
-                let distance = mapViewModel.userLocation?.distance(from: annotationLocation) ?? 0
-                if distance < minDistance {
-                    minDistance = distance
-                }
-            }
-            nearestHospitalDistance = minDistance / 1000.0
+        guard let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
+              mapViewModel.selectedLayers.contains(hospitalLayer),
+              let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id],
+              let userLocation = mapViewModel.userLocation else { return }
+        
+        numberOfHospitalsInRadius = hospitalAnnotations.count
+        
+        let distances = hospitalAnnotations.map {
+            CLLocation(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
+                .distance(from: userLocation)
+        }
+        if let minDistance = distances.min() {
+            nearestHospitalDistance = minDistance / 1000.0 // Convert to km
         }
     }
 

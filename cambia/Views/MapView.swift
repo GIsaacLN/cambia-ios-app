@@ -82,14 +82,8 @@ struct MapView: View {
                     .padding([.leading, .bottom], 16)
                 }
             }
-            /*.overlay {
-                if viewModel.showLayerSelection {
-                    LayerSelectionView(viewModel: viewModel)
-                        
-                }
-            }*/
-            // Layer Selection Sheet
-            
+            .preferredColorScheme(.dark)
+
         }
     }
 }
