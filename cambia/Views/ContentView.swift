@@ -67,7 +67,7 @@ struct ContentView: View {
             let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
             municipios = geoJSON.features.map { Municipio(
                 id: UUID(),
-                displayName: $0.properties.nomMun,
+                nombre: $0.properties.nomMun,
                 clave: $0.properties.clv,
                 estado: $0.properties.iviEstad?.capitalized
             )}
@@ -77,8 +77,14 @@ struct ContentView: View {
     }
 
     private func filterMunicipios() {
+        //Normaliza el texto para eliminar acentos y haciendolo minusculas para mejorar la busqueda
+        let normalizedSearchText = searchText.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+        
         filteredMunicipios = searchText.isEmpty ? municipios : municipios.filter {
-            $0.displayName?.localizedCaseInsensitiveContains(searchText) == true
+            let normalizedDisplayName = $0.displayFullName.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+            
+            // Checa si el texto normalizado `displayFullName` contiene el texto normalizado de `searchText`
+            return normalizedDisplayName.contains(normalizedSearchText)
         }
     }
 }
