@@ -3,7 +3,6 @@ import MapKit
 import Combine
 import CoreML
 
-
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var nearestHospitalDistance: Double = 0.0
@@ -21,45 +20,19 @@ class MetricsViewModel: ObservableObject {
     @Published var hourlyPrecipitation: Double? = 50.0
     @Published var annualPrecipitation: Double? = 840.0
     @Published var floodRiskPrediction: String = "No calculado"
-    @Published var inegiData: InegiData?
-    
-    private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
+    @Published var inegiData: InegiData? {
+        didSet { updateMetrics() }
+    }
+
     private var mapViewModel: MapViewModel
-    private var estadoMunicipioViewModel: EstadoMunicipioViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel, estadoMunicipioViewModel: EstadoMunicipioViewModel) {
+    init(mapViewModel: MapViewModel) {
         self.mapViewModel = mapViewModel
-        self.estadoMunicipioViewModel = estadoMunicipioViewModel
         loadModel()
-
-        // Observe changes in selected city/municipality to update cityArea and inundatedArea
-        estadoMunicipioViewModel.$selectedEstadoMunicipio
-            .sink { [weak self] _ in
-                self?.updateMetricsForSelectedMunicipio()
-                self?.loadInegiData()
-            }
-            .store(in: &cancellables)
-
-        mapViewModel.$selectedLayers
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-
-        mapViewModel.$annotations
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-
-        mapViewModel.$overlays
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        mapViewModel.$userLocation
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        updateMetricsForSelectedMunicipio() // Set initial values
+        observeMapViewModel()
     }
     
     // MARK: - Load ML Model
@@ -71,94 +44,62 @@ class MetricsViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Load INEGI Data
-    func loadInegiData() {
-        // Ensure `inegiDataManager` loads data for the selected municipality
-        guard let selectedMunicipio = estadoMunicipioViewModel.selectedEstadoMunicipio.municipios else { return }
+    // MARK: - Observers
+    private func observeMapViewModel() {
+        mapViewModel.$selectedLayers
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
         
-        let indicators = [
-            IndicatorType.densidad.rawValue,
-            IndicatorType.poblacionTotal.rawValue,
-            IndicatorType.viviendasConAgua.rawValue,
-            IndicatorType.viviendasConElectricidad.rawValue
-        ]
-
-        inegiDataManager.fetchData(
-            indicators: indicators,
-            estado: estadoMunicipioViewModel.selectedEstadoMunicipio.estado.rawValue,
-            municipio: selectedMunicipio.rawValue
-        ) { [weak self] inegiData in
-            DispatchQueue.main.async {
-                self?.inegiData = inegiData
-            }
-        }
+        mapViewModel.$annotations
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+        
+        mapViewModel.$overlays
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
+        
+        mapViewModel.$userLocation
+            .sink { [weak self] _ in self?.updateMetrics() }
+            .store(in: &cancellables)
     }
-
+    
     // MARK: - Metrics Calculation
     func updateMetrics() {
-        nearestHospitalDistance = 0.0
-        numberOfHospitalsInRadius = 0
-        floodRiskLevel = nil
-        cityArea = nil
-        inundatedArea = nil
-        hourlyPrecipitation = 50.0
-        annualPrecipitation = 840.0
-
+        resetMetrics()
+        
         guard let userLocation = mapViewModel.userLocation else { return }
         let userCoordinate = userLocation.coordinate
         
         updateHospitalMetrics(userCoordinate: userCoordinate)
         updateRiskMetrics(fileType: floodZonesFile, metric: &floodRiskLevel, userCoordinate: userCoordinate, label: "Flood Risk")
-
-        updateMetricsForSelectedMunicipio()
         
         performPrediction()
     }
-
-    private func updateMetricsForSelectedMunicipio() {
-        guard let selectedMunicipio = estadoMunicipioViewModel.selectedEstadoMunicipio.municipios else { return }
-        
-        if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
-            do {
-                let data = try Data(contentsOf: jsonURL)
-                let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
-                
-                if let municipioFeature = geoJSON.features.first(where: { $0.properties.municipio == selectedMunicipio.jsonFormattedName }) {
-                    cityArea = municipioFeature.properties.areaKm
-                    inundatedArea = municipioFeature.properties.areaInun
-                    populationVulnerability = municipioFeature.properties.iviPob20
-                    vulnerabilityIndex = municipioFeature.properties.iviVulne
-                    floodHazardLevel = municipioFeature.properties.peligroIn
-                    threshold12h = municipioFeature.properties.umbral12h
-                } else {
-                    print("Municipio no encontrado en el JSON.")
-                }
-            } catch {
-                print("Error al cargar o parsear el JSON: \(error)")
-            }
-        } else {
-            print("No se encontró el archivo inundacionmunicipio.json.")
-        }
+    
+    private func resetMetrics() {
+        nearestHospitalDistance = 0.0
+        numberOfHospitalsInRadius = 0
+        floodRiskLevel = "Not Available"
+        cityArea = 0.0
+        inundatedArea = 0.0
+        hourlyPrecipitation = 50.0
+        annualPrecipitation = 840.0
     }
-
-
-
+    
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
-        if let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
-           mapViewModel.selectedLayers.contains(hospitalLayer),
-           let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id] {
-
-            numberOfHospitalsInRadius = hospitalAnnotations.count
-
-            var minDistance: CLLocationDistance = Double.greatestFiniteMagnitude
-            for annotation in hospitalAnnotations {
-                let annotationLocation = CLLocation(latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude)
-                let distance = mapViewModel.userLocation?.distance(from: annotationLocation) ?? 0
-                if distance < minDistance {
-                    minDistance = distance
-                }
-            }
-            nearestHospitalDistance = minDistance / 1000.0
+        guard let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
+              mapViewModel.selectedLayers.contains(hospitalLayer),
+              let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id],
+              let userLocation = mapViewModel.userLocation else { return }
+        
+        numberOfHospitalsInRadius = hospitalAnnotations.count
+        
+        let distances = hospitalAnnotations.map {
+            CLLocation(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
+                .distance(from: userLocation)
+        }
+        if let minDistance = distances.min() {
+            nearestHospitalDistance = minDistance / 1000.0 // Convert to km
         }
     }
 

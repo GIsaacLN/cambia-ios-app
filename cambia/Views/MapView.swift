@@ -14,8 +14,6 @@ struct MapView: View {
     // MARK: - Observed Object
     @ObservedObject var viewModel: MapViewModel
     
-    @EnvironmentObject var municipalidadModel: EstadoMunicipioViewModel
-
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -39,7 +37,7 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            viewModel.recenter(to: municipalidadModel.selectedEstadoMunicipio.municipios ?? .alvaroObregon)
+                            //MARK: - Fix Later
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)
@@ -84,14 +82,8 @@ struct MapView: View {
                     .padding([.leading, .bottom], 16)
                 }
             }
-            /*.overlay {
-                if viewModel.showLayerSelection {
-                    LayerSelectionView(viewModel: viewModel)
-                        
-                }
-            }*/
-            // Layer Selection Sheet
-            
+            .preferredColorScheme(.dark)
+
         }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  JsonModel.swift
+//  FloodModels.swift
 //  cambia
 //
 //  Created by Raymundo Mondragon Lara on 06/11/24.
@@ -58,13 +58,16 @@ enum Coordinates: Codable {
     }
 }
 
-
-
+// Geometry struct for polygon coordinates
+struct Geometry: Codable {
+    let type: String
+    let coordinates: [[[Double]]]
+}
 
 struct Properties: Codable {
     let nomMun: String?
     let oid1: Int?
-    let cveMpio: String?
+    let cveMpio: Int?
     let iviEstad: String?
     let iviPob20: Int?
     let umbral12h: Double?
@@ -75,13 +78,14 @@ struct Properties: Codable {
     let areaInun: Double?
     let porcentaje: Double?
     let peligroIn: String?
+    let clv: String?
     
     private enum CodingKeys: String, CodingKey {
         case nomMun = "NOM_MUN"
         case oid1 = "OID_1"
         case cveMpio = "CVE_MPIO"
-        case iviEstad = "IVI_ESTAD"
-        case iviPob20 = "IVI_POB20"
+        case iviEstad = "IVI__ESTAD"
+        case iviPob20 = "IVI__POB20"
         case umbral12h = "UMBRAL12H"
         case iviVulne = "IVI__VULNE"
         case municipio = "MUNICIPIO"
@@ -90,12 +94,14 @@ struct Properties: Codable {
         case areaInun = "ÁREA_INUN"
         case porcentaje = "PORCENTA_1"
         case peligroIn = "PELIGRO_IN"
+        case clv = "CLV"
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         nomMun = try? container.decode(String.self, forKey: .nomMun)
         oid1 = try? container.decode(Int.self, forKey: .oid1)
+        cveMpio = try? container.decode(Int.self, forKey: .cveMpio)
         iviEstad = try? container.decode(String.self, forKey: .iviEstad)
         iviPob20 = try? container.decode(Int.self, forKey: .iviPob20)
         umbral12h = try? container.decode(Double.self, forKey: .umbral12h)
@@ -106,12 +112,7 @@ struct Properties: Codable {
         areaInun = try? container.decode(Double.self, forKey: .areaInun)
         porcentaje = try? container.decode(Double.self, forKey: .porcentaje)
         peligroIn = try? container.decode(String.self, forKey: .peligroIn)
-        
-        // Handle CVE_MPIO as either Int or String
-        if let intValue = try? container.decode(Int.self, forKey: .cveMpio) {
-            cveMpio = String(intValue)
-        } else {
-            cveMpio = try? container.decode(String.self, forKey: .cveMpio)
-        }
+        clv = try? container.decode(String.self, forKey: .clv)
+
     }
 }

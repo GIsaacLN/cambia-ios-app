@@ -9,13 +9,9 @@ import SwiftUI
 
 @main
 struct cambiaApp: App {
-    
-    var viewModel = EstadoMunicipioViewModel()
-    
     var body: some Scene {
         WindowGroup {
-            ContentView(estadoMunicipioViewModel: viewModel)
-                .environmentObject(viewModel)
+            ContentView()
         }
     }
 }
