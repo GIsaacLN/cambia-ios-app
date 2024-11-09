@@ -13,7 +13,7 @@ struct Municipio: Identifiable {
     
     var displayName: String?
     var clave: String?
-    
+    var estado: String?
     var coordinates: CLLocationCoordinate2D?
 }
 

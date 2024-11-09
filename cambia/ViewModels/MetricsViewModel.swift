@@ -23,17 +23,25 @@ class MetricsViewModel: ObservableObject {
     @Published var floodRiskPrediction: String = "No calculado"
     @Published var inegiData: InegiData?
     
-    private var settings = SelectedMunicipio()
     private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
     private var mapViewModel: MapViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
+    private var settings: SelectedMunicipio
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel) {
+    init(mapViewModel: MapViewModel, settings: SelectedMunicipio) {
         self.mapViewModel = mapViewModel
+        self.settings = settings
         loadModel()
-
+        
+        // Observe changes in selectedMunicipio and update metrics
+        settings.$selectedMunicipio
+            .sink { [weak self] _ in
+                self?.updateMetricsForSelectedMunicipio()
+            }
+            .store(in: &cancellables)
+        
         mapViewModel.$selectedLayers
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
@@ -50,9 +58,9 @@ class MetricsViewModel: ObservableObject {
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
         
-        updateMetricsForSelectedMunicipio() // Set initial values
+        updateMetricsForSelectedMunicipio() // Initial load
     }
-    
+
     // MARK: - Load ML Model
     private func loadModel() {
         do {
@@ -107,10 +115,30 @@ class MetricsViewModel: ObservableObject {
     }
 
     private func updateMetricsForSelectedMunicipio() {
-        //MARK: - Fix Later
+        guard let selectedMunicipio = settings.selectedMunicipio else { return }
+        
+        if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: jsonURL)
+                let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
+                
+                if let municipioFeature = geoJSON.features.first(where: { $0.properties.clv == selectedMunicipio.clave }) {
+                    cityArea = municipioFeature.properties.areaKm
+                    inundatedArea = municipioFeature.properties.areaInun
+                    populationVulnerability = municipioFeature.properties.iviPob20
+                    vulnerabilityIndex = municipioFeature.properties.iviVulne
+                    floodHazardLevel = municipioFeature.properties.peligroIn
+                    threshold12h = municipioFeature.properties.umbral12h
+                } else {
+                    print("Municipio no encontrado en el JSON.")
+                }
+            } catch {
+                print("Error al cargar o parsear el JSON: \(error)")
+            }
+        } else {
+            print("No se encontró el archivo inundacionmunicipio.json.")
+        }
     }
-
-
 
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
         if let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),

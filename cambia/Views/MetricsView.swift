@@ -7,6 +7,7 @@ struct MetricsView: View {
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var metricsViewModel: MetricsViewModel
 
+    @EnvironmentObject var settings: SelectedMunicipio
     @State private var inegiData: InegiData? = nil
     @State private var isLoading = false
 
@@ -25,8 +26,9 @@ struct MetricsView: View {
 
     init() {
         let mapVM = MapViewModel()
+        let settings = SelectedMunicipio()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, settings: settings))
     }
 
     var body: some View {
@@ -85,9 +87,9 @@ struct MetricsView: View {
             loadData()
         }
         //MARK: - Fix later
-        /*.onChange(of: viewModel.selectedEstadoMunicipio.municipios) { oldValue, newValue in
+        .onChange(of: settings.selectedMunicipio?.clave) { oldValue, newValue in
             loadData()
-        }*/
+        }
     }
   
     // MARK: - Funciónes
@@ -104,8 +106,7 @@ struct MetricsView: View {
                 IndicatorType.densidad.rawValue
             ]
             //MARK: - Fix later
-/*
-            manager.fetchData(indicators: indicators, municipio: ) { data in
+            manager.fetchData(indicators: indicators, municipio: settings.selectedMunicipio?.clave) { data in
                 if let dat = data {
                     DispatchQueue.main.async {
                         isLoading = false
@@ -114,7 +115,6 @@ struct MetricsView: View {
                     }
                 }
             }
- */
         }
     }
     

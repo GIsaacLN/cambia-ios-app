@@ -7,17 +7,21 @@ import MapKit
 struct ContentView: View {
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var metricsViewModel: MetricsViewModel
-    @StateObject var selectedMunicipio = SelectedMunicipio()
+    @StateObject var settings = SelectedMunicipio()
 
     
     @State private var isSearchActive: Bool = false
     @State private var searchText: String = ""
     @State private var filteredMunicipios: [Municipio] = []
     
+    @State private var municipios: [Municipio] = []
+
     init() {
         let mapVM = MapViewModel()
+        let settings = SelectedMunicipio()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
+        _settings = StateObject(wrappedValue: settings)
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, settings: settings))
     }
 
     var body: some View {
@@ -59,7 +63,7 @@ struct ContentView: View {
             .tabViewStyle(.tabBarOnly)
             .preferredColorScheme(.dark)
 // MARK: - FIX This later
-//            .navigationTitle(viewModel.textSelectedEstadoMunicipio(for: viewModel.selectedEstadoMunicipio.estado, to: viewModel.selectedEstadoMunicipio.municipios))
+            .navigationTitle("\(settings.selectedMunicipio?.displayName ?? "No se seleccionó un municipio"), \(settings.selectedMunicipio?.estado ?? "")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isSearchActive {
@@ -86,7 +90,7 @@ struct ContentView: View {
                 loadData()
             }
         }
-        .environmentObject(selectedMunicipio)
+        .environmentObject(settings)
     }
     
     private func loadData() {
@@ -100,11 +104,12 @@ struct ContentView: View {
             let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
             
             // Map features to Municipios
-            filteredMunicipios = geoJSON.features.map { feature in
-                Municipio(
+            municipios = geoJSON.features.map { feature in
+                return Municipio(
                     id: UUID(),
                     displayName: feature.properties.nomMun,
-                    clave: feature.properties.cveMpio
+                    clave: feature.properties.clv,
+                    estado: feature.properties.iviEstad?.capitalized
                 )
             }
             
@@ -116,9 +121,9 @@ struct ContentView: View {
     private func filterMunicipios() {
         if searchText.isEmpty {
             // Show all if search is empty
-            filteredMunicipios = filteredMunicipios
+            filteredMunicipios = municipios
         } else {
-            filteredMunicipios = filteredMunicipios.filter { municipio in
+            filteredMunicipios = municipios.filter { municipio in
                 municipio.displayName?.localizedCaseInsensitiveContains(searchText) == true
             }
         }

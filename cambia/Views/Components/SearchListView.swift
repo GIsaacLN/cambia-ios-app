@@ -9,6 +9,7 @@ import SwiftUI
 
 // SearchListView para mostrar los resultados de búsqueda
 struct SearchListView: View {
+    @EnvironmentObject var settings: SelectedMunicipio
     @Binding var isSearching: Bool
     @Binding var searchText: String
     @Binding var filteredMunicipios: [Municipio]
@@ -18,15 +19,16 @@ struct SearchListView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 if !filteredMunicipios.isEmpty {
-                    Section(header: Text("Municipios Encontrados")) {
+                    Section(header: Text("Municipios Encontrados").font(.headline)) {
                         ForEach(filteredMunicipios) { municipio in
                             Button {
+                                settings.selectedMunicipio = municipio
                                 searchText = ""
                                 isSearching = false
                                 filteredMunicipios = []
                             } label: {
                                 HStack {
-                                    Text(municipio.displayName ?? "")
+                                    Text("\(municipio.displayName ?? ""), \(municipio.estado ?? "")")
                                     Spacer()
                                 }
                             }
@@ -47,8 +49,22 @@ struct SearchListView: View {
         .frame(minHeight: 100, maxHeight: maxHeight) // Restricting height for scroll view
         .cornerRadius(20)
         .padding(.vertical)
-        .padding()
     }
+}
+
+#Preview {
+    VStack {
+        SearchListView(isSearching: .constant(true), searchText: .constant("H"), filteredMunicipios: .constant([]))
+
+        SearchListView(
+            isSearching: .constant(true),
+            searchText: .constant(""),
+            filteredMunicipios: .constant([
+                Municipio(id: UUID(), displayName: "Aca", estado: "Example State")
+            ])
+        )
+    }
+    .padding()
 }
 
 #Preview {
