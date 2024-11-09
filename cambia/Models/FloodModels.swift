@@ -1,5 +1,5 @@
 //
-//  JsonModel.swift
+//  FloodModels.swift
 //  cambia
 //
 //  Created by Raymundo Mondragon Lara on 06/11/24.
@@ -58,8 +58,11 @@ enum Coordinates: Codable {
     }
 }
 
-
-
+// Geometry struct for polygon coordinates
+struct Geometry: Codable {
+    let type: String
+    let coordinates: [[[Double]]]
+}
 
 struct Properties: Codable {
     let nomMun: String?

@@ -5,19 +5,19 @@ import SwiftUI
 import MapKit
 
 struct ContentView: View {
-    @EnvironmentObject var viewModel: EstadoMunicipioViewModel
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var metricsViewModel: MetricsViewModel
+    @StateObject var selectedMunicipio = SelectedMunicipio()
+
     
     @State private var isSearchActive: Bool = false
     @State private var searchText: String = ""
-    @State private var filteredCities: [Estado] = []
     @State private var filteredMunicipios: [Municipio] = []
     
-    init(estadoMunicipioViewModel: EstadoMunicipioViewModel) {
+    init() {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, estadoMunicipioViewModel: estadoMunicipioViewModel))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
     }
 
     var body: some View {
@@ -27,7 +27,7 @@ struct ContentView: View {
                 // Pestaña de Métricas
                 Tab("Métricas", systemImage: "play") {
                     ZStack {
-                        MetricsView(estadoMunicipioViewModel: viewModel)
+                        MetricsView()
                         if isSearchActive {
                             VStack {
                                 HStack {
@@ -35,7 +35,6 @@ struct ContentView: View {
                                     SearchListView(
                                         isSearching: $isSearchActive,
                                         searchText: $searchText,
-                                        filteredCities: $filteredCities,
                                         filteredMunicipios: $filteredMunicipios).frame(width: 400)
                                         .padding()
                                         .padding(.top)
@@ -59,13 +58,14 @@ struct ContentView: View {
             }
             .tabViewStyle(.tabBarOnly)
             .preferredColorScheme(.dark)
-            .navigationTitle(viewModel.textSelectedEstadoMunicipio(for: viewModel.selectedEstadoMunicipio.estado, to: viewModel.selectedEstadoMunicipio.municipios))
+// MARK: - FIX This later
+//            .navigationTitle(viewModel.textSelectedEstadoMunicipio(for: viewModel.selectedEstadoMunicipio.estado, to: viewModel.selectedEstadoMunicipio.municipios))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if isSearchActive {
                     SearchView(isSearching: $isSearchActive, searchText: $searchText)
                         .onChange(of: searchText) { _ in
-                            filterResults()
+                            filterMunicipios()
                         }
                         .padding(.top)
                     Button("Cancel") {
@@ -82,17 +82,45 @@ struct ContentView: View {
                     }
                 }
             }
+            .onAppear {
+                loadData()
+            }
         }
+        .environmentObject(selectedMunicipio)
     }
     
-    // Función para filtrar los resultados según el texto de búsqueda
-    func filterResults() {
+    private func loadData() {
+        guard let url = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") else {
+            print("Failed to locate JSON file.")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
+            
+            // Map features to Municipios
+            filteredMunicipios = geoJSON.features.map { feature in
+                Municipio(
+                    id: UUID(),
+                    displayName: feature.properties.nomMun,
+                    clave: feature.properties.cveMpio
+                )
+            }
+            
+        } catch {
+            print("Error decoding JSON: \(error)")
+        }
+    }
+
+    private func filterMunicipios() {
         if searchText.isEmpty {
-            filteredCities = []
-            filteredMunicipios = []
+            // Show all if search is empty
+            filteredMunicipios = filteredMunicipios
         } else {
-            filteredCities = Estado.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
-            filteredMunicipios = Municipio.allCases.filter { $0.displayName.lowercased().starts(with: searchText.lowercased()) }
+            filteredMunicipios = filteredMunicipios.filter { municipio in
+                municipio.displayName?.localizedCaseInsensitiveContains(searchText) == true
+            }
         }
     }
 }

@@ -8,7 +8,6 @@
 import Foundation
 
 struct InegiData: Codable, Equatable {
-    let estado: String
     let municipio: String
     var indicators: [String: Double]
 }
@@ -24,7 +23,7 @@ struct InegiDataResponse: Codable {
         case series = "Series"
     }
     
-    func toInegiData(estado: String, municipio: String) -> InegiData {
+    func toInegiData(municipio: String) -> InegiData {
         var indicators = [String: Double]()
         
         for serie in series {
@@ -46,7 +45,7 @@ struct InegiDataResponse: Codable {
             }
         }
         
-        return InegiData(estado: estado, municipio: municipio, indicators: indicators)
+        return InegiData(municipio: municipio, indicators: indicators)
     }
 }
 

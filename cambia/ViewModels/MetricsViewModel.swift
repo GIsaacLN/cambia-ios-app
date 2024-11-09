@@ -23,25 +23,16 @@ class MetricsViewModel: ObservableObject {
     @Published var floodRiskPrediction: String = "No calculado"
     @Published var inegiData: InegiData?
     
+    private var settings = SelectedMunicipio()
     private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
     private var mapViewModel: MapViewModel
-    private var estadoMunicipioViewModel: EstadoMunicipioViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel, estadoMunicipioViewModel: EstadoMunicipioViewModel) {
+    init(mapViewModel: MapViewModel) {
         self.mapViewModel = mapViewModel
-        self.estadoMunicipioViewModel = estadoMunicipioViewModel
         loadModel()
-
-        // Observe changes in selected city/municipality to update cityArea and inundatedArea
-        estadoMunicipioViewModel.$selectedEstadoMunicipio
-            .sink { [weak self] _ in
-                self?.updateMetricsForSelectedMunicipio()
-                self?.loadInegiData()
-            }
-            .store(in: &cancellables)
 
         mapViewModel.$selectedLayers
             .sink { [weak self] _ in self?.updateMetrics() }
@@ -74,7 +65,8 @@ class MetricsViewModel: ObservableObject {
     // MARK: - Load INEGI Data
     func loadInegiData() {
         // Ensure `inegiDataManager` loads data for the selected municipality
-        guard let selectedMunicipio = estadoMunicipioViewModel.selectedEstadoMunicipio.municipios else { return }
+        //MARK: - Fix Later
+        guard let selectedMunicipio = settings.selectedMunicipio else { return }
         
         let indicators = [
             IndicatorType.densidad.rawValue,
@@ -85,8 +77,7 @@ class MetricsViewModel: ObservableObject {
 
         inegiDataManager.fetchData(
             indicators: indicators,
-            estado: estadoMunicipioViewModel.selectedEstadoMunicipio.estado.rawValue,
-            municipio: selectedMunicipio.rawValue
+            municipio: selectedMunicipio.clave
         ) { [weak self] inegiData in
             DispatchQueue.main.async {
                 self?.inegiData = inegiData
@@ -116,29 +107,7 @@ class MetricsViewModel: ObservableObject {
     }
 
     private func updateMetricsForSelectedMunicipio() {
-        guard let selectedMunicipio = estadoMunicipioViewModel.selectedEstadoMunicipio.municipios else { return }
-        
-        if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
-            do {
-                let data = try Data(contentsOf: jsonURL)
-                let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
-                
-                if let municipioFeature = geoJSON.features.first(where: { $0.properties.municipio == selectedMunicipio.jsonFormattedName }) {
-                    cityArea = municipioFeature.properties.areaKm
-                    inundatedArea = municipioFeature.properties.areaInun
-                    populationVulnerability = municipioFeature.properties.iviPob20
-                    vulnerabilityIndex = municipioFeature.properties.iviVulne
-                    floodHazardLevel = municipioFeature.properties.peligroIn
-                    threshold12h = municipioFeature.properties.umbral12h
-                } else {
-                    print("Municipio no encontrado en el JSON.")
-                }
-            } catch {
-                print("Error al cargar o parsear el JSON: \(error)")
-            }
-        } else {
-            print("No se encontró el archivo inundacionmunicipio.json.")
-        }
+        //MARK: - Fix Later
     }
 
 

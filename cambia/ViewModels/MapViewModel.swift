@@ -235,7 +235,7 @@ class MapViewModel: ObservableObject {
     // MARK:  - Recenter on municipality
     func recenter(to municipio: Municipio) {
         // Obtener las coordenadas del municipio utilizando el enum
-        let coordinates = municipio.coordinates
+        guard let coordinates = municipio.coordinates else { return }
         
         // Crear una nueva región centrada en el municipio con un nivel de zoom adecuado
         let newRegion = MKCoordinateRegion(

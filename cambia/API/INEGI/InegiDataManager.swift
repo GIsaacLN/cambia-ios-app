@@ -28,12 +28,12 @@ class InegiDataManager {
         return "c637c203-fa2e-c752-ec58-0fefb7bac235"
     }
     
-    func fetchData(indicators: [String], estado: String, municipio: String?, completion: @escaping (InegiData?) -> Void) {
+    func fetchData(indicators: [String], municipio: String?, completion: @escaping (InegiData?) -> Void) {
         delegate?.reset()
         
         let indicatorsString = indicators.joined(separator: ",")
         var urlComponents = URLComponents(string: baseURL)!
-        urlComponents.path += "\(indicatorsString)/es/\(estado)\(municipio ?? "")/true/BISE/2.0/\(apiKey)"
+        urlComponents.path += "\(indicatorsString)/es/\(municipio ?? "")/true/BISE/2.0/\(apiKey)"
         urlComponents.queryItems = [
             URLQueryItem(name: "type", value: "json")
         ]
@@ -63,7 +63,7 @@ class InegiDataManager {
             }
             
             if let jsonData = data {
-                let inegiData = self.decodeResponse(json: jsonData, estado: estado, municipio: municipio ?? "")
+                let inegiData = self.decodeResponse(json: jsonData, municipio: municipio ?? "")
                 DispatchQueue.main.async {
                     completion(inegiData)
                 }
@@ -77,11 +77,11 @@ class InegiDataManager {
         task.resume()
     }
     
-    func decodeResponse(json: Data, estado: String, municipio: String) -> InegiData? {
+    func decodeResponse(json: Data, municipio: String) -> InegiData? {
         do {
             let decoder = JSONDecoder()
             let inegiDataResponse = try decoder.decode(InegiDataResponse.self, from: json)
-            return inegiDataResponse.toInegiData(estado: estado, municipio: municipio)
+            return inegiDataResponse.toInegiData(municipio: municipio)
         } catch {
             self.handleDecodeError(error)
             return nil

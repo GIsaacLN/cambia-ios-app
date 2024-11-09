@@ -11,7 +11,6 @@ struct MetricsView: View {
     @State private var isLoading = false
 
     @ObservedObject var errorDelegate = InegiDataDelegate()
-    @EnvironmentObject var viewModel: EstadoMunicipioViewModel
 
     // Definimos el formateador de números
     var formatter: NumberFormatter {
@@ -24,10 +23,10 @@ struct MetricsView: View {
         return formatter
     }
 
-    init(estadoMunicipioViewModel: EstadoMunicipioViewModel) {
+    init() {
         let mapVM = MapViewModel()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, estadoMunicipioViewModel: estadoMunicipioViewModel))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
     }
 
     var body: some View {
@@ -85,9 +84,10 @@ struct MetricsView: View {
         .onAppear {
             loadData()
         }
-        .onChange(of: viewModel.selectedEstadoMunicipio.municipios) { oldValue, newValue in
+        //MARK: - Fix later
+        /*.onChange(of: viewModel.selectedEstadoMunicipio.municipios) { oldValue, newValue in
             loadData()
-        }
+        }*/
     }
   
     // MARK: - Funciónes
@@ -103,7 +103,9 @@ struct MetricsView: View {
                 IndicatorType.poblacionTotal.rawValue,
                 IndicatorType.densidad.rawValue
             ]
-            manager.fetchData(indicators: indicators, estado: viewModel.selectedEstadoMunicipio.estado.rawValue, municipio: viewModel.selectedEstadoMunicipio.municipios?.rawValue) { data in
+            //MARK: - Fix later
+/*
+            manager.fetchData(indicators: indicators, municipio: ) { data in
                 if let dat = data {
                     DispatchQueue.main.async {
                         isLoading = false
@@ -112,6 +114,7 @@ struct MetricsView: View {
                     }
                 }
             }
+ */
         }
     }
     
