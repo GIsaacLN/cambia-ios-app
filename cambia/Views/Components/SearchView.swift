@@ -6,24 +6,28 @@
 //
 
 import SwiftUI
-import MapKit
 
 struct SearchView: View {
     @Binding var isSearching: Bool
     @Binding var searchText: String
     
     var body: some View {
-        ZStack {
-            Color.gray6.opacity(0.7)
-                .cornerRadius(20)
-            TextField("\(Image(systemName: "magnifyingglass"))  Buscar Ciudad o Municipio", text: $searchText)
+        HStack {
+            TextField("Buscar Municipio", text: $searchText)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
-                .padding(.vertical, 7.5)
+            
+            Button("Cancel") {
+                isSearching = false
+                searchText = ""
+            }
+            .foregroundStyle(Color.teal)
         }
+        .frame(height: 40)
         .padding()
     }
 }
 
-#Preview{
+#Preview {
     SearchView(isSearching: .constant(true), searchText: .constant("X"))
 }

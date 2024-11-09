@@ -30,55 +30,54 @@ struct MetricsView: View {
     }
     
     var body: some View {
-        HStack {
-            // Metrics Section
-            VStack(spacing: 10) {
-                // First Row
-                HStack(alignment: .top, spacing: 10) {
-                    distributionOfHousing()
-                    
+        ZStack{
+            Color.gray5.ignoresSafeArea()
+            
+            ScrollView{
+                HStack {
+                    // Metrics Section
                     VStack(spacing: 10) {
-                        populationTotal()
-                        vulnerabilityIndex()
+                        // First Row
+                        HStack(alignment: .top, spacing: 10) {
+                            distributionOfHousing()
+                            
+                            VStack(spacing: 10) {
+                                populationTotal()
+                                vulnerabilityIndex()
+                            }
+                            
+                            VStack(spacing: 10) {
+                                populationDensity()
+                                cityArea()
+                            }
+                        }
+                        
+                        // Second Row
+                        HStack(alignment: .top, spacing: 10) {
+                            precipitationCard()
+                            floodHazardIndex()
+                        }
+                        
+                        // Third Row
+                        HStack(alignment: .top, spacing: 10) {
+                            floodedArea()
+                            floodedAreaPercentage()
+                        }
+                        
+                        // Fourth Row
+                        HStack(alignment: .top, spacing: 10) {
+                            hospitalsCard()
+                        }
+                        
+                        Spacer()
                     }
-                    
-                    VStack(spacing: 10) {
-                        populationDensity()
-                        cityArea()
-                    }
+                    .padding()
                 }
-                
-                // Second Row
-                HStack(alignment: .top, spacing: 10) {
-                    precipitationCard()
-                    floodHazardIndex()
+                .onChange(of: settings.selectedMunicipio?.clave) { _ in
+                    loadData()
+                    metricsViewModel.updateMetrics()
                 }
-                
-                // Third Row
-                HStack(alignment: .top, spacing: 10) {
-                    floodedArea()
-                    floodedAreaPercentage()
-                }
-                
-                // Fourth Row
-                HStack(alignment: .top, spacing: 10) {
-                    hospitalsCard()
-                }
-                
-                Spacer()
             }
-            .padding()
-            
-            Spacer()
-            
-            // Map Section
-            MapView(viewModel: mapViewModel)
-                .padding()
-        }
-        .background(Color.gray5.edgesIgnoringSafeArea(.all))
-        .onChange(of: settings.selectedMunicipio?.clave) { _ in
-            loadData()
-            metricsViewModel.updateMetrics()
         }
     }
     
