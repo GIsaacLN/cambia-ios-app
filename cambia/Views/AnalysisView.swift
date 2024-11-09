@@ -84,3 +84,7 @@ struct MetricRow: View {
         .cornerRadius(8)
     }
 }
+
+#Preview{
+    AnalysisView(metricsViewModel: MetricsViewModel(mapViewModel: MapViewModel()))
+}

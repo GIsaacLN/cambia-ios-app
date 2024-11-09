@@ -36,8 +36,12 @@ struct ColorScaleLegendView: View {
         }
         .padding()
         .background(Color.black.opacity(0.8))
+        .foregroundStyle(.white)
         .cornerRadius(10)
         .padding([.leading, .bottom], 16)
     }
 }
 
+#Preview {
+    ColorScaleLegendView()
+}

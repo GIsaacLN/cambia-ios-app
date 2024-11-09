@@ -49,6 +49,7 @@ struct ContentView: View {
                 MapView(viewModel: mapViewModel)
                     .padding()
             }
+            .padding(.horizontal)
             .background(Color.gray5.edgesIgnoringSafeArea(.all))
             .onAppear { loadData() }
             .environmentObject(settings)
