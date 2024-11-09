@@ -28,7 +28,7 @@ struct MetricsView: View {
         let mapVM = MapViewModel()
         let settings = SelectedMunicipio()
         _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, settings: settings))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
     }
 
     var body: some View {
@@ -83,12 +83,13 @@ struct MetricsView: View {
                 .padding()
         }
         .background(Color.gray5.edgesIgnoringSafeArea(.all))
-        .onAppear {
-            loadData()
-        }
-        //MARK: - Fix later
         .onChange(of: settings.selectedMunicipio?.clave) { oldValue, newValue in
-            loadData()
+            if newValue != oldValue {
+                DispatchQueue.main.async {
+                    loadData()
+                    metricsViewModel.updateMetrics()
+                }
+            }
         }
     }
   
@@ -105,19 +106,44 @@ struct MetricsView: View {
                 IndicatorType.poblacionTotal.rawValue,
                 IndicatorType.densidad.rawValue
             ]
-            //MARK: - Fix later
+            
             manager.fetchData(indicators: indicators, municipio: settings.selectedMunicipio?.clave) { data in
-                if let dat = data {
-                    DispatchQueue.main.async {
-                        isLoading = false
-                        self.inegiData = dat
-                        self.metricsViewModel.inegiData = dat
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    if let fetchedData = data {
+                        self.inegiData = fetchedData
+                        self.metricsViewModel.inegiData = fetchedData // Update MetricsViewModel directly
+                        print("Updated MetricsViewModel with fetched INEGI data.")
                     }
                 }
             }
+            
+            
+            if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
+                do {
+                    let data = try Data(contentsOf: jsonURL)
+                    let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
+                    
+                    if let municipioFeature = geoJSON.features.first(where: { $0.properties.clv == settings.selectedMunicipio?.clave }) {
+                        metricsViewModel.cityArea = municipioFeature.properties.areaKm
+                        metricsViewModel.inundatedArea = municipioFeature.properties.areaInun
+                        metricsViewModel.populationVulnerability = municipioFeature.properties.iviPob20
+                        metricsViewModel.vulnerabilityIndex = municipioFeature.properties.iviVulne
+                        metricsViewModel.floodHazardLevel = municipioFeature.properties.peligroIn
+                        metricsViewModel.threshold12h = municipioFeature.properties.umbral12h
+                        
+                    } else {
+                        print("Municipio no encontrado en el JSON.")
+                    }
+                } catch {
+                    print("Error al cargar o parsear el JSON: \(error)")
+                }
+            } else {
+                print("No se encontró el archivo inundacionmunicipio.json.")
+            }
         }
     }
-    
+
     // MARK: - Funciónes de tipo VIEW
     func RecuadroMediano(subtitle: String, formattedValue : String, unit: String,icon: String) -> some View {
         VStack {
@@ -278,12 +304,14 @@ struct MetricsView: View {
         if let data = metricsViewModel.inegiData,
            let value = data.indicators["densidad"],
            let formattedValue = formatter.string(from: NSNumber(value: value)) {
-            RecuadroMediano(subtitle: String("DENSIDAD POBLACIONAL") , formattedValue: formattedValue, unit: String("Hab/Km²"), icon: String("person.3.fill"))
+            print("Densidad poblacional loaded: \(formattedValue)")
+            return RecuadroMediano(subtitle: "DENSIDAD POBLACIONAL", formattedValue: formattedValue, unit: "Hab/Km²", icon: "person.3.fill")
         } else {
-            RecuadroMediano(subtitle: String("DENSIDAD POBLACIONAL") , formattedValue: String("N/A"), unit: String("Km²"), icon: String("person.3.fill"))
+            print("Densidad poblacional data not available, showing N/A.")
+            return RecuadroMediano(subtitle: "DENSIDAD POBLACIONAL", formattedValue: "N/A", unit: "Km²", icon: "person.3.fill")
         }
     }
-    
+
     ///Vista densidad poblacional
     func poblacionTotal() -> some View {
         if let data = metricsViewModel.inegiData,

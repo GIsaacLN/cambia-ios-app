@@ -21,26 +21,24 @@ class MetricsViewModel: ObservableObject {
     @Published var hourlyPrecipitation: Double? = 50.0
     @Published var annualPrecipitation: Double? = 840.0
     @Published var floodRiskPrediction: String = "No calculado"
-    @Published var inegiData: InegiData?
-    
+    @Published var inegiData: InegiData? {
+        didSet {
+            // Update metrics that depend on INEGI data here
+            updateMetrics()
+        }
+    }
+
     private var inegiDataManager = InegiDataManager() // Instantiate InegiDataManager
     private var mapViewModel: MapViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
-    private var settings: SelectedMunicipio
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel, settings: SelectedMunicipio) {
+    init(mapViewModel: MapViewModel) {
         self.mapViewModel = mapViewModel
-        self.settings = settings
         loadModel()
         
         // Observe changes in selectedMunicipio and update metrics
-        settings.$selectedMunicipio
-            .sink { [weak self] _ in
-                self?.updateMetricsForSelectedMunicipio()
-            }
-            .store(in: &cancellables)
         
         mapViewModel.$selectedLayers
             .sink { [weak self] _ in self?.updateMetrics() }
@@ -57,8 +55,6 @@ class MetricsViewModel: ObservableObject {
         mapViewModel.$userLocation
             .sink { [weak self] _ in self?.updateMetrics() }
             .store(in: &cancellables)
-        
-        updateMetricsForSelectedMunicipio() // Initial load
     }
 
     // MARK: - Load ML Model
@@ -69,30 +65,6 @@ class MetricsViewModel: ObservableObject {
             print("Error al cargar el modelo ML: \(error)")
         }
     }
-
-    // MARK: - Load INEGI Data
-    func loadInegiData() {
-        // Ensure `inegiDataManager` loads data for the selected municipality
-        //MARK: - Fix Later
-        guard let selectedMunicipio = settings.selectedMunicipio else { return }
-        
-        let indicators = [
-            IndicatorType.densidad.rawValue,
-            IndicatorType.poblacionTotal.rawValue,
-            IndicatorType.viviendasConAgua.rawValue,
-            IndicatorType.viviendasConElectricidad.rawValue
-        ]
-
-        inegiDataManager.fetchData(
-            indicators: indicators,
-            municipio: selectedMunicipio.clave
-        ) { [weak self] inegiData in
-            DispatchQueue.main.async {
-                self?.inegiData = inegiData
-            }
-        }
-    }
-
     // MARK: - Metrics Calculation
     func updateMetrics() {
         nearestHospitalDistance = 0.0
@@ -108,36 +80,8 @@ class MetricsViewModel: ObservableObject {
         
         updateHospitalMetrics(userCoordinate: userCoordinate)
         updateRiskMetrics(fileType: floodZonesFile, metric: &floodRiskLevel, userCoordinate: userCoordinate, label: "Flood Risk")
-
-        updateMetricsForSelectedMunicipio()
         
         performPrediction()
-    }
-
-    private func updateMetricsForSelectedMunicipio() {
-        guard let selectedMunicipio = settings.selectedMunicipio else { return }
-        
-        if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
-            do {
-                let data = try Data(contentsOf: jsonURL)
-                let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
-                
-                if let municipioFeature = geoJSON.features.first(where: { $0.properties.clv == selectedMunicipio.clave }) {
-                    cityArea = municipioFeature.properties.areaKm
-                    inundatedArea = municipioFeature.properties.areaInun
-                    populationVulnerability = municipioFeature.properties.iviPob20
-                    vulnerabilityIndex = municipioFeature.properties.iviVulne
-                    floodHazardLevel = municipioFeature.properties.peligroIn
-                    threshold12h = municipioFeature.properties.umbral12h
-                } else {
-                    print("Municipio no encontrado en el JSON.")
-                }
-            } catch {
-                print("Error al cargar o parsear el JSON: \(error)")
-            }
-        } else {
-            print("No se encontró el archivo inundacionmunicipio.json.")
-        }
     }
 
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {

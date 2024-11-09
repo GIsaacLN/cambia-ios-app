@@ -21,7 +21,7 @@ struct ContentView: View {
         let settings = SelectedMunicipio()
         _mapViewModel = StateObject(wrappedValue: mapVM)
         _settings = StateObject(wrappedValue: settings)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM, settings: settings))
+        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
     }
 
     var body: some View {
