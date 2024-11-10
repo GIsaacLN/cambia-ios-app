@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 // Top-level struct for GeoJSON format
 struct GeoJSON: Codable {
@@ -63,7 +64,26 @@ enum Coordinates: Codable {
 struct Geometry: Codable {
     let type: String
     let coordinates: Coordinates
-    
+    var centroidCoordinate: CLLocationCoordinate2D? {
+        // Calculate the centroid based on the polygon’s coordinates
+        switch self.coordinates {
+        case .polygon(let coordinatesArray):
+            guard let firstRing = coordinatesArray.first else { return nil }
+            let totalPoints = Double(firstRing.count)
+            let sumCoords = firstRing.reduce((lat: 0.0, lon: 0.0)) { (result, coordinate) in
+                return (lat: result.lat + coordinate[1], lon: result.lon + coordinate[0])
+            }
+            return CLLocationCoordinate2D(latitude: sumCoords.lat / totalPoints, longitude: sumCoords.lon / totalPoints)
+        case .point(let point):
+            if point.count >= 2 {
+                return CLLocationCoordinate2D(latitude: point[1], longitude: point[0])
+            }
+        case .invalid:
+            return nil
+        }
+        return nil
+    }
+
     enum Coordinates: Codable {
         case point([Double])
         case polygon([[[Double]]])

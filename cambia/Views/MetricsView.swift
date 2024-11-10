@@ -90,7 +90,6 @@ struct MetricsView: View {
                 }
                 .onChange(of: settings.selectedMunicipio?.clave) {
                     loadData()
-                    metricsViewModel.updateMetrics()
                 }
             }
             .preferredColorScheme(.dark)

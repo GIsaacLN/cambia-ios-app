@@ -48,12 +48,30 @@ struct ContentView: View {
                             mapViewModel.recenter(to: municipio)
                         }
                     }
-                    .onChange(of: settings.selectedMunicipio?.clave) { oldValue, newValue in
+                    .onChange(of: settings.selectedMunicipio?.clave) {
                         if let municipio = settings.selectedMunicipio {
                             mapViewModel.displayMunicipioGeometry(municipio)
                             mapViewModel.recenter(to: municipio)
+                            
+                            // Trigger search for selected layers in the new region
+                            for layer in mapViewModel.selectedLayers {
+                                mapViewModel.addLayer(layer)
+                            }
+                            metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
                         }
                     }
+                    .onChange(of: mapViewModel.selectedLayers) {
+                        if let municipio = settings.selectedMunicipio {
+                            mapViewModel.recenter(to: municipio)
+                            
+                            // Clear previous annotations and re-add only for selected layers
+                            mapViewModel.annotations.removeAll()
+                            for layer in mapViewModel.selectedLayers {
+                                mapViewModel.addLayer(layer)
+                            }
+                        }
+                    }
+
             }
             .padding(.horizontal)
             .background(Color.gray5.edgesIgnoringSafeArea(.all))

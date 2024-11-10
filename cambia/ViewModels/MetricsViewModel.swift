@@ -2,6 +2,7 @@ import SwiftUI
 import MapKit
 import Combine
 import CoreML
+import CoreLocation
 
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -33,7 +34,6 @@ class MetricsViewModel: ObservableObject {
     // MARK: - Initialization
     init() {
         loadModel()
-        updateMetrics()
     }
     
     // MARK: - Load ML Model
@@ -52,19 +52,13 @@ class MetricsViewModel: ObservableObject {
     }
     
     private func resetMetrics() {
-        averageHospitalDistance = 0.0
-        totalHospitalsInMunicipio = 0
         floodRiskLevel = "Not Available"
         cityArea = 0.0
         inundatedArea = 0.0
         hourlyPrecipitation = 50.0
         annualPrecipitation = 840.0
     }
-    
-    private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
-        // TODO: - Fix Later
-    }
-    
+        
     /* TODO: - Delete if not useful
     private func updateRiskMetrics(fileType: String, metric: inout String?, userCoordinate: CLLocationCoordinate2D, label: String) {
         if let overlayLayer = mapViewModel.availableLayers.first(where: { $0.type == .geoJSON(fileType) }),
@@ -130,6 +124,161 @@ class MetricsViewModel: ObservableObject {
             floodRiskPrediction = "Error en la predicción"
             print("Error al realizar la predicción: \(error)")
         }
+    }
+
+    // Check if a given point is inside a polygon
+    func pointInPolygon(point: CLLocationCoordinate2D, polygon: [[Double]]) -> Bool {
+        var inside = false
+        let count = polygon.count
+        
+        var j = count - 1
+        for i in 0..<count {
+            let xi = polygon[i][0], yi = polygon[i][1]
+            let xj = polygon[j][0], yj = polygon[j][1]
+            
+            let intersect = ((yi > point.latitude) != (yj > point.latitude)) &&
+                            (point.longitude < (xj - xi) * (point.latitude - yi) / (yj - yi) + xi)
+            if intersect {
+                inside = !inside
+            }
+            j = i
+        }
+        
+        return inside
+    }
+
+    func updateMetricsForMunicipio(municipio: Municipio) {
+        guard let geometry = municipio.geometry,
+              let centroid = calculateCentroid(of: geometry) else {
+            print("Unable to calculate centroid for municipio: \(municipio.displayFullName)")
+            return
+        }
+
+        let regionRadius = municipio.cityArea.map { sqrt($0) * 1000 } ?? 50000 // Estimate radius from area, or default to 50km if unavailable
+        let newRegion = MKCoordinateRegion(center: centroid, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
+
+        // Perform search for each type with municipio geometry filter
+        searchForPOI(type: "Hospital", centroid: centroid, region: newRegion, geometry: geometry) { count, avgDistance in
+            DispatchQueue.main.async {
+                self.totalHospitalsInMunicipio = count
+                self.averageHospitalDistance = avgDistance
+            }
+        }
+        
+        searchForPOI(type: "Police", centroid: centroid, region: newRegion, geometry: geometry) { count, avgDistance in
+            DispatchQueue.main.async {
+                self.totalPoliceStationsInMunicipio = count
+                self.averagePoliceStationDistance = avgDistance
+            }
+        }
+        
+        searchForPOI(type: "Fire Station", centroid: centroid, region: newRegion, geometry: geometry) { count, avgDistance in
+            DispatchQueue.main.async {
+                self.totalFireStationsInMunicipio = count
+                self.averageFireStationDistance = avgDistance
+            }
+        }
+    }
+
+    private func searchForPOI(type: String, centroid: CLLocationCoordinate2D, region: MKCoordinateRegion, geometry: Geometry, completion: @escaping (Int, Double) -> Void) {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = type
+        request.resultTypes = .pointOfInterest
+        request.region = region
+
+        let search = MKLocalSearch(request: request)
+        search.start { response, error in
+            if let error = error {
+                print("Error searching for \(type): \(error.localizedDescription)")
+                completion(0, 0.0)
+                return
+            }
+
+            guard let response = response else {
+                print("No response received for \(type)")
+                completion(0, 0.0)
+                return
+            }
+
+            // Filter items based on whether they are within the municipio geometry
+            let filteredItems = response.mapItems.filter { item in
+                let coordinate = item.placemark.coordinate
+                
+                if case let .polygon(coordinatesArray) = geometry.coordinates, let firstRing = coordinatesArray.first {
+                    return self.pointInPolygon(point: coordinate, polygon: firstRing)
+                }
+                return false
+            }
+
+            let totalItems = filteredItems.count
+
+            let totalDistance = filteredItems.reduce(0.0) { sum, item in
+                let location = CLLocation(latitude: item.placemark.coordinate.latitude, longitude: item.placemark.coordinate.longitude)
+                let centro = CLLocation(latitude: centroid.latitude, longitude: centroid.longitude)
+                let distance = location.distance(from: centro) // in meters
+
+                // Print details of each item
+                if let name = item.name {
+                    print("Name: \(name)")
+                }
+                print("Coordinate: \(item.placemark.coordinate.latitude), \(item.placemark.coordinate.longitude)")
+
+                // Construct and print the address manually
+                let street = item.placemark.thoroughfare ?? ""
+                let subStreet = item.placemark.subThoroughfare ?? ""
+                let city = item.placemark.locality ?? ""
+                let state = item.placemark.administrativeArea ?? ""
+                let postalCode = item.placemark.postalCode ?? ""
+                let address = "\(subStreet) \(street), \(city), \(state) \(postalCode)"
+                print("Address: \(address)")
+
+                print("Distance from centroid: \(distance) meters")
+                print("-------------------")
+
+                return sum + distance
+            }
+
+            let averageDistance = totalItems > 0 ? totalDistance / Double(totalItems) / 1000.0 : 0.0
+            print("Total distance: \(totalDistance) meters")
+            print("Average distance: \(averageDistance) kilometers")
+
+            completion(totalItems, averageDistance)
+        }
+    }
+
+    func calculateCentroid(of geometry: Geometry) -> CLLocationCoordinate2D? {
+        switch geometry.coordinates {
+        case .polygon(let coordinatesArray):
+            // Use the first ring (outer boundary) for centroid calculation
+            guard let firstRing = coordinatesArray.first else { return nil }
+            var sumLatitude: Double = 0
+            var sumLongitude: Double = 0
+            let totalPoints = Double(firstRing.count)
+            
+            for coordinate in firstRing {
+                if coordinate.count >= 2 {
+                    let longitude = coordinate[0]
+                    let latitude = coordinate[1]
+                    sumLatitude += latitude
+                    sumLongitude += longitude
+                }
+            }
+            
+            if totalPoints > 0 {
+                let centroidLatitude = sumLatitude / totalPoints
+                let centroidLongitude = sumLongitude / totalPoints
+                return CLLocationCoordinate2D(latitude: centroidLatitude, longitude: centroidLongitude)
+            }
+        case .point(let point):
+            if point.count >= 2 {
+                let longitude = point[0]
+                let latitude = point[1]
+                return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            }
+        case .invalid:
+            return nil
+        }
+        return nil
     }
 
 }
