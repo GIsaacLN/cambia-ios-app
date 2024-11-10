@@ -6,10 +6,8 @@ import SwiftUI
 struct MetricsView: View {
     @EnvironmentObject private var mapViewModel: MapViewModel
     @EnvironmentObject private var metricsViewModel: MetricsViewModel
-    
     @EnvironmentObject var settings: SelectedMunicipio
     @State private var isLoading = false
-    
     @ObservedObject var errorDelegate = InegiDataDelegate()
     
     // Number formatter for consistent formatting
@@ -26,56 +24,56 @@ struct MetricsView: View {
     var body: some View {
         ZStack{
             Color.gray5.ignoresSafeArea()
-            
-            ScrollView{
-                HStack {
-                    // Metrics Section
-                    VStack(spacing: 10) {
-                        // First Row
-                        HStack(alignment: .top, spacing: 10) {
-                            distributionOfHousing()
-                            
-                            VStack(spacing: 10) {
-                                populationTotal()
-                                vulnerabilityIndex()
-                            }
-                            
-                            VStack(spacing: 10) {
-                                populationDensity()
-                                cityArea()
-                            }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    SectionView(title: "Distribución de Viviendas", icon: "house.fill") {
+                        HStack {
+                            MetricCardView(title: "Acceso a electricidad", value: getIndicatorValue("viviendasConElectricidad") + " %", icon: Image(systemName: "bolt.fill"), isLoading: isLoading)
+                            MetricCardView(title: "Acceso a agua", value: getIndicatorValue("viviendasConAgua") + " %", icon: Image(systemName: "drop.fill"), isLoading: isLoading)
                         }
-                        
-                        // Second Row
-                        HStack(alignment: .top, spacing: 10) {
-                            precipitationCard()
-                            floodHazardIndex()
-                        }
-                        
-                        // Third Row
-                        HStack(alignment: .top, spacing: 10) {
-                            floodedArea()
-                            floodedAreaPercentage()
-                        }
-                        
-                        // Fourth Row
-                        HStack(alignment: .top, spacing: 10) {
-                            hospitalsCard()
-                        }
-                        
-                        Spacer()
                     }
-                    .padding()
+                    
+                    SectionView(title: "Demografía", icon: "person.3.fill") {
+                        HStack {
+                            MetricCardView(title: "Densidad Poblacional", value: getIndicatorValue("densidad"), icon: Image(systemName: "person.3.fill"), isLoading: isLoading)
+                            MetricCardView(title: "Población Total", value: getIndicatorValue("poblacionTotal"), icon: Image(systemName: "person.fill"), isLoading: isLoading)
+                        }
+                    }
+                    
+                    SectionView(title: "Servicios Básicos", icon: "stethoscope") {
+                        MetricCardView(
+                            title: "Hospital más cercano",
+                            value: formatValue(metricsViewModel.nearestHospitalDistance) + " km",
+                            icon: Image(systemName: "cross.fill"),
+                            footer: "Tiempo de desplazamiento: \(metricsViewModel.travelTimeToNearestHospital) min\nNo. en un radio de 10 km: \(metricsViewModel.numberOfHospitalsInRadius) hospitales", isLoading: isLoading
+                        )
+                    }
+                    
+                    SectionView(title: "Inundaciones y Peligro", icon: "exclamationmark.triangle.fill") {
+                        HStack {
+                            MetricCardView(title: "Área Inundada", value: formatValue(settings.selectedMunicipio?.inundatedArea) + " Km²", icon: Image(systemName: "drop.triangle.fill"), isLoading: isLoading)
+                            MetricCardView(title: "Peligro de Inundación", value: settings.selectedMunicipio?.floodHazardLevel ?? "N/A", icon: Image(systemName: "exclamationmark.triangle.fill"), color: .red.opacity(0.2), isLoading: isLoading)
+                        }
+                    }
+                    
+                    SectionView(title: "Precipitaciones", icon: "cloud.rain.fill") {
+                        HStack {
+                            MetricCardView(title: "Umbral en 12 horas", value: formatValue(metricsViewModel.hourlyPrecipitation) + " mm", icon: Image(systemName: "clock"), isLoading: isLoading)
+                            MetricCardView(title: "Promedio anual", value: formatValue(metricsViewModel.annualPrecipitation) + " mm", icon: Image(systemName: "calendar"), isLoading: isLoading)
+                        }
+                    }
                 }
                 .onChange(of: settings.selectedMunicipio?.clave) {
                     loadData()
                     metricsViewModel.updateMetrics()
                 }
             }
+            .preferredColorScheme(.dark)
         }
     }
     
-    // MARK: - INEGI Data Loading
+    // MARK: - Loading Data
     private func loadData() {
         isLoading = true
         DispatchQueue.global(qos: .background).async {
@@ -96,301 +94,6 @@ struct MetricsView: View {
                     }
                 }
             }
-        }
-    }
-    
-    // MARK: - Reusable Metric Card View
-    private func MetricCard(title: String, value: String, unit: String, icon: String? = nil, width: CGFloat = 170, height: CGFloat = 90) -> some View {
-        VStack {
-            Text(title)
-                .font(.caption2)
-                .foregroundColor(.white)
-                .opacity(0.5)
-                .lineLimit(1)
-            
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.gray6.opacity(0.7))
-                
-                VStack {
-                    if isLoading {
-                        ProgressView()
-                    } else {
-                        Text(value)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding(.bottom)
-                    }
-                    
-                    HStack {
-                        if let icon = icon {
-                            Image(systemName: icon)
-                                .resizable()
-                                .foregroundColor(.teal)
-                                .scaledToFit()
-                                .frame(height: 27)
-                                .padding(.bottom, 10)
-                        }
-                        Spacer()
-                        Text(unit)
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-                    }
-                }
-                .padding()
-            }
-            .frame(width: width, height: height)
-        }
-    }
-    
-    // MARK: - Specific Metric Views
-    private func distributionOfHousing() -> some View {
-        VStack {
-            Text("DISTRIBUCIÓN DE VIVIENDAS")
-                .font(.caption2)
-                .foregroundColor(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.gray6.opacity(0.7))
-                
-                VStack {
-                    HStack {
-                        Image(systemName: "percent")
-                            .foregroundColor(.teal)
-                            .bold()
-                        Text("Porcentajes")
-                            .font(.title3)
-                            .bold()
-                    }
-                    .padding(5)
-                    
-                    Divider()
-                    
-                    HStack {
-                        Text("Viviendas con electricidad")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text(getIndicatorValue("viviendasConElectricidad") + " %")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                    
-                    Divider()
-                    
-                    HStack {
-                        Text("Viviendas con agua entubada")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text(getIndicatorValue("viviendasConAgua") + " %")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding()
-            }
-            .frame(width: 220, height: 180)
-        }
-    }
-    
-    private func populationDensity() -> some View {
-        MetricCard(
-            title: "DENSIDAD POBLACIONAL",
-            value: getIndicatorValue("densidad"),
-            unit: "Hab/Km²",
-            icon: "person.3.fill"
-        )
-    }
-    
-    private func populationTotal() -> some View {
-        MetricCard(
-            title: "POBLACIÓN TOTAL",
-            value: getIndicatorValue("poblacionTotal"),
-            unit: "Personas",
-            icon: "person.fill"
-        )
-    }
-    
-    private func cityArea() -> some View {
-        MetricCard(
-            title: "SUPERFICIE DE LA CIUDAD",
-            value: formatValue(settings.selectedMunicipio?.cityArea),
-            unit: "Km²"
-        )
-    }
-    
-    private func floodedArea() -> some View {
-        MetricCard(
-            title: "SUPERFICIE PROPENSA A INUNDACIONES",
-            value: formatValue(settings.selectedMunicipio?.inundatedArea),
-            unit: "Km²",
-            icon: "water.waves",
-            width: 285
-        )
-    }
-    
-    private func vulnerabilityIndex() -> some View {
-        MetricCard(
-            title: "VULNERABILIDAD",
-            value: settings.selectedMunicipio?.vulnerabilityIndex ?? "N/A",
-            unit: "Nivel"
-        )
-    }
-    
-    private func floodedAreaPercentage() -> some View {
-        MetricCard(
-            title: "PORCENTAJE ÁREA INUNDADA",
-            value: formatValue(settings.selectedMunicipio?.inundatedArea),
-            unit: "%",
-            icon: "water.waves",
-            width: 280
-        )
-    }
-    
-    private func floodHazardIndex() -> some View {
-        MetricCard(
-            title: "PELIGRO DE INUNDACIÓN",
-            value: settings.selectedMunicipio?.floodHazardLevel ?? "N/A",
-            unit: "Nivel",
-            icon: "water.waves.and.arrow.trianglehead.down.trianglebadge.exclamationmark"
-        )
-    }
-    
-    private func precipitationCard() -> some View {
-        VStack {
-            Text("PRECIPITACIONES")
-                .font(.caption2)
-                .foregroundColor(.white)
-                .opacity(0.5)
-            
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.gray6.opacity(0.7))
-                
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Umbral en 12 horas:")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        
-                        HStack {
-                            Image(systemName: "clock")
-                                .foregroundColor(.teal)
-                                .bold()
-                            
-                            Text(formatValue(metricsViewModel.hourlyPrecipitation))
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    
-                    Divider()
-                        .padding()
-                    
-                    VStack(alignment: .leading) {
-                        Text("Promedio anual")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        
-                        HStack {
-                            Image(systemName: "calendar")
-                                .foregroundColor(.teal)
-                                .bold()
-                            
-                            Text(formatValue(metricsViewModel.annualPrecipitation))
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        }
-                    }
-                }
-                .padding()
-            }
-            .frame(width: 400, height: 90)
-        }
-    }
-    
-    private func hospitalsCard() -> some View {
-        VStack {
-            Text("SERVICIOS BÁSICOS")
-                .font(.caption2)
-                .foregroundColor(.white)
-                .opacity(0.5)
-                .lineLimit(1)
-            
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.gray6.opacity(0.7))
-                
-                VStack {
-                    HStack {
-                        Image(systemName: "stethoscope")
-                            .foregroundColor(.teal)
-                            .bold()
-                        Text("Hospitales")
-                            .font(.title3)
-                            .bold()
-                    }
-                    .padding(5)
-                    
-                    Divider().padding(.horizontal)
-                    
-                    HStack {
-                        Text("Hospital más cercano a:")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Spacer()
-                        
-                        Text(formatValue(metricsViewModel.nearestHospitalDistance) + " Km")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                    
-                    Divider().padding(.horizontal)
-                    
-                    HStack {
-                        Text("Tiempo de desplazamiento:")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text("\(metricsViewModel.travelTimeToNearestHospital) min")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                    
-                    Divider().padding(.horizontal)
-                    
-                    HStack {
-                        Text("No. en un radio de 10 km:")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                        
-                        Spacer()
-                        
-                        Text("\(metricsViewModel.numberOfHospitalsInRadius) hospitales")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding()
-            }
-            .frame(width: 370, height: 215)
         }
     }
     
@@ -415,10 +118,34 @@ struct MetricsView: View {
     }
 }
 
+struct SectionView<Content: View>: View {
+    let title: String
+    let icon: String
+    let content: Content
+    
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.teal)
+                Text(title)
+                    .font(.title2)
+                    .foregroundColor(.white)
+            }
+            content
+        }
+    }
+}
+
 #Preview {
     MetricsView()
         .environmentObject(SelectedMunicipio())
         .environmentObject(MapViewModel())
         .environmentObject(MetricsViewModel())
-
 }
