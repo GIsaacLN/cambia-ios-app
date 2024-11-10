@@ -42,14 +42,38 @@ struct MetricsView: View {
                     }
                     
                     SectionView(title: "Servicios Básicos", icon: "stethoscope") {
-                        MetricCardView(
-                            title: "Hospital más cercano",
-                            value: formatValue(metricsViewModel.nearestHospitalDistance) + " km",
-                            icon: Image(systemName: "cross.fill"),
-                            footer: "Tiempo de desplazamiento: \(metricsViewModel.travelTimeToNearestHospital) min\nNo. en un radio de 10 km: \(metricsViewModel.numberOfHospitalsInRadius) hospitales", isLoading: isLoading
-                        )
+                        let columns = [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ]
+                        
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            MetricCardView(
+                                title: "Hospitales",
+                                value: "\(metricsViewModel.totalHospitalsInMunicipio) en total",
+                                icon: Image(systemName: "cross.fill"),
+                                footer: "Distancia promedio: \(formatValue(metricsViewModel.averageHospitalDistance)) km",
+                                isLoading: isLoading
+                            )
+                            
+                            MetricCardView(
+                                title: "Policía",
+                                value: "\(metricsViewModel.totalPoliceStationsInMunicipio) estaciones",
+                                icon: Image(systemName: "shield.fill"),
+                                footer: "Distancia promedio: \(formatValue(metricsViewModel.averagePoliceStationDistance)) km",
+                                isLoading: isLoading
+                            )
+                            
+                            MetricCardView(
+                                title: "Bomberos",
+                                value: "\(metricsViewModel.totalFireStationsInMunicipio) estaciones",
+                                icon: Image(systemName: "flame.fill"),
+                                footer: "Distancia promedio: \(formatValue(metricsViewModel.averageFireStationDistance)) km",
+                                isLoading: isLoading
+                            )
+                        }
                     }
-                    
+
                     SectionView(title: "Inundaciones y Peligro", icon: "exclamationmark.triangle.fill") {
                         HStack {
                             MetricCardView(title: "Área Inundada", value: formatValue(settings.selectedMunicipio?.inundatedArea) + " Km²", icon: Image(systemName: "drop.triangle.fill"), isLoading: isLoading)
@@ -115,6 +139,32 @@ struct MetricsView: View {
         } else {
             return "N/A"
         }
+    }
+}
+
+struct GroupedMetricView: View {
+    let title: String
+    let metrics: [(title: String, value: String, icon: Image)]
+    let isLoading: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            ForEach(metrics, id: \.title) { metric in
+                MetricCardView(
+                    title: metric.title,
+                    value: metric.value,
+                    icon: metric.icon,
+                    isLoading: isLoading
+                )
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.2))
+        .cornerRadius(10)
     }
 }
 

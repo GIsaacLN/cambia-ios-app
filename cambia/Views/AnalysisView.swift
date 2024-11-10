@@ -47,8 +47,8 @@ struct AnalysisView: View {
                     MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
                     MetricRow(title: "Área Inundada", value: metricsViewModel.inundatedArea.map { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
                     MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
-                    MetricRow(title: "Distancia al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.nearestHospitalDistance)) km")
-                    MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.numberOfHospitalsInRadius)")
+                    MetricRow(title: "Distancia promedio al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.averageHospitalDistance)) km")
+                    MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.totalHospitalsInMunicipio)")
                     MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", metricsViewModel.cityArea ?? 0)) Km²")
                 }
                 

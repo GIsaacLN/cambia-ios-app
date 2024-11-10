@@ -5,10 +5,13 @@ import CoreML
 
 class MetricsViewModel: ObservableObject {
     // MARK: - Published Properties
-    @Published var nearestHospitalDistance: Double = 0.0
-    @Published var travelTimeToNearestHospital: Int = 0
-    @Published var numberOfHospitalsInRadius: Int = 0
-    
+    @Published var totalHospitalsInMunicipio: Int = 0
+    @Published var averageHospitalDistance: Double = 0.0
+    @Published var totalPoliceStationsInMunicipio: Int = 0
+    @Published var averagePoliceStationDistance: Double = 0.0
+    @Published var totalFireStationsInMunicipio: Int = 0
+    @Published var averageFireStationDistance: Double = 0.0
+
     @Published var cityArea: Double? = 0
     @Published var inundatedArea: Double? = 0
     @Published var populationVulnerability: Int? = nil
@@ -49,8 +52,8 @@ class MetricsViewModel: ObservableObject {
     }
     
     private func resetMetrics() {
-        nearestHospitalDistance = 0.0
-        numberOfHospitalsInRadius = 0
+        averageHospitalDistance = 0.0
+        totalHospitalsInMunicipio = 0
         floodRiskLevel = "Not Available"
         cityArea = 0.0
         inundatedArea = 0.0
