@@ -17,7 +17,7 @@ struct HeaderView: View {
         VStack(alignment: .leading) {
             ZStack{
                 HStack {
-                    Text("\(settings.selectedMunicipio?.displayName ?? "No se seleccionó un municipio"), \(settings.selectedMunicipio?.estado ?? "")")
+                    Text(settings.selectedMunicipio?.displayFullName ?? "Selecciona un Municipio")
                     
                     if isSearchActive {
                         SearchView(isSearching: $isSearchActive, searchText: $searchText)
@@ -57,16 +57,16 @@ struct HeaderView: View {
         isSearchActive: .constant(true),
         searchText: .constant("Morelia"),
         filteredMunicipios: .constant([
-            Municipio(id: UUID(), displayName: "Morelia", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Guadalajara", estado: "Jalisco"),
-            Municipio(id: UUID(), displayName: "Pátzcuaro", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Zamora", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Monterrey", estado: "Nuevo León"),
-            Municipio(id: UUID(), displayName: "Cancún", estado: "Quintana Roo"),
-            Municipio(id: UUID(), displayName: "Tijuana", estado: "Baja California"),
-            Municipio(id: UUID(), displayName: "Culiacán", estado: "Sinaloa"),
-            Municipio(id: UUID(), displayName: "Toluca", estado: "Estado de México"),
-            Municipio(id: UUID(), displayName: "León", estado: "Guanajuato")
+            Municipio(nombre: "Morelia", estado: "Michoacán"),
+            Municipio(nombre: "Guadalajara", estado: "Jalisco"),
+            Municipio(nombre: "Pátzcuaro", estado: "Michoacán"),
+            Municipio(nombre: "Zamora", estado: "Michoacán"),
+            Municipio(nombre: "Monterrey", estado: "Nuevo León"),
+            Municipio(nombre: "Cancún", estado: "Quintana Roo"),
+            Municipio(nombre: "Tijuana", estado: "Baja California"),
+            Municipio(nombre: "Culiacán", estado: "Sinaloa"),
+            Municipio(nombre: "Toluca", estado: "Estado de México"),
+            Municipio(nombre: "León", estado: "Guanajuato")
         ])
     )
     .environmentObject(SelectedMunicipio())
@@ -77,16 +77,16 @@ struct HeaderView: View {
         isSearchActive: .constant(false),
         searchText: .constant("Morelia"),
         filteredMunicipios: .constant([
-            Municipio(id: UUID(), displayName: "Morelia", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Guadalajara", estado: "Jalisco"),
-            Municipio(id: UUID(), displayName: "Pátzcuaro", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Zamora", estado: "Michoacán"),
-            Municipio(id: UUID(), displayName: "Monterrey", estado: "Nuevo León"),
-            Municipio(id: UUID(), displayName: "Cancún", estado: "Quintana Roo"),
-            Municipio(id: UUID(), displayName: "Tijuana", estado: "Baja California"),
-            Municipio(id: UUID(), displayName: "Culiacán", estado: "Sinaloa"),
-            Municipio(id: UUID(), displayName: "Toluca", estado: "Estado de México"),
-            Municipio(id: UUID(), displayName: "León", estado: "Guanajuato")
+            Municipio(nombre: "Morelia", estado: "Michoacán"),
+            Municipio(nombre: "Guadalajara", estado: "Jalisco"),
+            Municipio(nombre: "Pátzcuaro", estado: "Michoacán"),
+            Municipio(nombre: "Zamora", estado: "Michoacán"),
+            Municipio(nombre: "Monterrey", estado: "Nuevo León"),
+            Municipio(nombre: "Cancún", estado: "Quintana Roo"),
+            Municipio(nombre: "Tijuana", estado: "Baja California"),
+            Municipio(nombre: "Culiacán", estado: "Sinaloa"),
+            Municipio(nombre: "Toluca", estado: "Estado de México"),
+            Municipio(nombre: "León", estado: "Guanajuato")
         ])
     )
     .environmentObject(SelectedMunicipio())

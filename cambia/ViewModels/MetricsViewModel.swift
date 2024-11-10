@@ -24,15 +24,13 @@ class MetricsViewModel: ObservableObject {
         didSet { updateMetrics() }
     }
 
-    private var mapViewModel: MapViewModel
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: FloodRiskPredictor?
     
     // MARK: - Initialization
-    init(mapViewModel: MapViewModel) {
-        self.mapViewModel = mapViewModel
+    init() {
         loadModel()
-        observeMapViewModel()
+        updateMetrics()
     }
     
     // MARK: - Load ML Model
@@ -43,37 +41,11 @@ class MetricsViewModel: ObservableObject {
             print("Error al cargar el modelo ML: \(error)")
         }
     }
-
-    // MARK: - Observers
-    private func observeMapViewModel() {
-        mapViewModel.$selectedLayers
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        mapViewModel.$annotations
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        mapViewModel.$overlays
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-        
-        mapViewModel.$userLocation
-            .sink { [weak self] _ in self?.updateMetrics() }
-            .store(in: &cancellables)
-    }
     
     // MARK: - Metrics Calculation
     func updateMetrics() {
+        //TODO: - Fix Later
         resetMetrics()
-        
-        guard let userLocation = mapViewModel.userLocation else { return }
-        let userCoordinate = userLocation.coordinate
-        
-        updateHospitalMetrics(userCoordinate: userCoordinate)
-        updateRiskMetrics(fileType: floodZonesFile, metric: &floodRiskLevel, userCoordinate: userCoordinate, label: "Flood Risk")
-        
-        performPrediction()
     }
     
     private func resetMetrics() {
@@ -87,22 +59,10 @@ class MetricsViewModel: ObservableObject {
     }
     
     private func updateHospitalMetrics(userCoordinate: CLLocationCoordinate2D) {
-        guard let hospitalLayer = mapViewModel.availableLayers.first(where: { $0.name == "Hospitals" }),
-              mapViewModel.selectedLayers.contains(hospitalLayer),
-              let hospitalAnnotations = mapViewModel.layerAnnotations[hospitalLayer.id],
-              let userLocation = mapViewModel.userLocation else { return }
-        
-        numberOfHospitalsInRadius = hospitalAnnotations.count
-        
-        let distances = hospitalAnnotations.map {
-            CLLocation(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
-                .distance(from: userLocation)
-        }
-        if let minDistance = distances.min() {
-            nearestHospitalDistance = minDistance / 1000.0 // Convert to km
-        }
+        // TODO: - Fix Later
     }
-
+    
+    /* TODO: - Delete if not useful
     private func updateRiskMetrics(fileType: String, metric: inout String?, userCoordinate: CLLocationCoordinate2D, label: String) {
         if let overlayLayer = mapViewModel.availableLayers.first(where: { $0.type == .geoJSON(fileType) }),
            mapViewModel.selectedLayers.contains(overlayLayer),
@@ -122,7 +82,7 @@ class MetricsViewModel: ObservableObject {
         } else {
             metric = "\(label): Not Available"
         }
-    }
+    }*/
     
     // MARK: - Perform Prediction
     func performPrediction() {
