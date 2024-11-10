@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-// SearchListView para mostrar los resultados de búsqueda
+// SearchListView.swift (for displaying search results as a dropdown)
 struct SearchListView: View {
     @EnvironmentObject var settings: SelectedMunicipio
     @Binding var isSearching: Bool
     @Binding var searchText: String
     @Binding var filteredMunicipios: [Municipio]
-    let maxHeight: CGFloat = 400 // Maximum height for the list
+    let maxHeight: CGFloat = 400
 
     var body: some View {
         ScrollView {
@@ -36,17 +36,15 @@ struct SearchListView: View {
                         }
                     }
                     .padding()
+                } else if !searchText.isEmpty {
+                    Text("No se encontraron resultados.")
+                        .padding()
                 }
-            }
-            
-            if filteredMunicipios.isEmpty && !searchText.isEmpty {
-                Text("No se encontraron resultados.")
-                    .padding()
             }
         }
         .foregroundStyle(.white)
         .background(Color("gray5"))
-        .frame(minHeight: 100, maxHeight: maxHeight) // Restricting height for scroll view
+        .frame(maxWidth: .infinity, minHeight: 100, maxHeight: maxHeight)
         .cornerRadius(20)
         .padding(.vertical)
     }
@@ -54,13 +52,19 @@ struct SearchListView: View {
 
 #Preview {
     VStack {
-        SearchListView(isSearching: .constant(true), searchText: .constant("H"), filteredMunicipios: .constant([]))
+        SearchListView(
+            isSearching: .constant(true),
+            searchText: .constant("P"),
+            filteredMunicipios: .constant([])
+        )
 
         SearchListView(
             isSearching: .constant(true),
             searchText: .constant(""),
             filteredMunicipios: .constant([
-                Municipio(id: UUID(), displayName: "Aca", estado: "Example State")
+                Municipio(id: UUID(), displayName: "Aguascalientes", estado: "Aguascalientes"),
+                Municipio(id: UUID(), displayName: "Durango", estado: "Durango"),
+                Municipio(id: UUID(), displayName: "Tepic", estado: "Nayarit")
             ])
         )
     }
@@ -68,9 +72,15 @@ struct SearchListView: View {
 }
 
 #Preview {
-    SearchListView(isSearching: .constant(true), searchText: .constant("H"), filteredMunicipios: .constant([]))
-}
-
-#Preview {
-    SearchListView(isSearching: .constant(true), searchText: .constant(""), filteredMunicipios: .constant([Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca"),Municipio(id: UUID.init(),displayName: "Aca")]))
+    SearchListView(
+        isSearching: .constant(true),
+        searchText: .constant(""),
+        filteredMunicipios: .constant([
+            Municipio(id: UUID(), displayName: "Oaxaca", estado: "Oaxaca"),
+            Municipio(id: UUID(), displayName: "Veracruz", estado: "Veracruz"),
+            Municipio(id: UUID(), displayName: "La Paz", estado: "Baja California Sur"),
+            Municipio(id: UUID(), displayName: "Querétaro", estado: "Querétaro"),
+            Municipio(id: UUID(), displayName: "San Luis Potosí", estado: "San Luis Potosí")
+        ])
+    )
 }
