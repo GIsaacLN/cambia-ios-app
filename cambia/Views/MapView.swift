@@ -86,7 +86,12 @@ struct MapView: View {
                 }
             }
             .preferredColorScheme(.dark)
-
+        }
+        .onChange(of: settings.selectedMunicipio?.clave) {
+            if let municipio = settings.selectedMunicipio {
+                viewModel.updateLayersForMunicipio(municipio)
+                viewModel.selectedMunicipio = municipio
+            }
         }
     }
 }

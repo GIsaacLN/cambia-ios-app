@@ -31,7 +31,9 @@ class MapViewModel: ObservableObject {
     @Published var selectedLayers: [MapLayer] = []
     @Published var availableLayers: [MapLayer] = []
     @Published var showLayerSelection: Bool = false
-    
+
+    var selectedMunicipio = Municipio()
+
     var isFloodLayerSelected: Bool {
         selectedLayers.contains { $0.name == "Riesgo de Inundaciones" }
     }
@@ -53,6 +55,14 @@ class MapViewModel: ObservableObject {
         setupAvailableLayers()
     }
     
+    // MARK: - Update Layers for Selected Municipio
+    func updateLayersForMunicipio(_ municipio: Municipio) {
+        for layer in selectedLayers {
+            selectedLayers.removeAll { $0 == layer }
+            removeLayer(layer)
+        }
+    }
+
     // MARK: - Layer Setup
     func setupAvailableLayers() {
         availableLayers = [
@@ -78,22 +88,24 @@ class MapViewModel: ObservableObject {
     }
     
     // Modify addLayer and removeLayer methods
-    private func addLayer(_ layer: MapLayer) {
+    func addLayer(_ layer: MapLayer) {
         switch layer.type {
         case .geoJSON(let fileName):
             let newOverlays = loadGeoJSONOverlay(fileName: fileName)
             layerOverlays[layer.id] = newOverlays
             overlays.append(contentsOf: newOverlays)
         case .pointsOfInterest(let query):
-            search(for: query) { newAnnotations in
-                self.layerAnnotations[layer.id] = newAnnotations
-                DispatchQueue.main.async {
-                    self.annotations.append(contentsOf: newAnnotations)
+            if let municipioGeometry = selectedMunicipio.geometry {
+                search(for: query, within: region, geometry: municipioGeometry) { newAnnotations in
+                    self.layerAnnotations[layer.id] = newAnnotations
+                    DispatchQueue.main.async {
+                        self.annotations.append(contentsOf: newAnnotations)
+                    }
                 }
             }
         }
     }
-    
+
     private func removeLayer(_ layer: MapLayer) {
         if let overlaysToRemove = layerOverlays[layer.id] {
             overlays.removeAll { overlay in
@@ -202,9 +214,29 @@ class MapViewModel: ObservableObject {
         return overlays
     }
 
-
+    // Check if a given point is inside a polygon
+    func pointInPolygon(point: CLLocationCoordinate2D, polygon: [[Double]]) -> Bool {
+        var inside = false
+        let count = polygon.count
+        
+        var j = count - 1
+        for i in 0..<count {
+            let xi = polygon[i][0], yi = polygon[i][1]
+            let xj = polygon[j][0], yj = polygon[j][1]
+            
+            let intersect = ((yi > point.latitude) != (yj > point.latitude)) &&
+                            (point.longitude < (xj - xi) * (point.latitude - yi) / (yj - yi) + xi)
+            if intersect {
+                inside = !inside
+            }
+            j = i
+        }
+        
+        return inside
+    }
+    
     // MARK: - Search Functionality
-    private func search(for query: String, completion: @escaping ([MKAnnotation]) -> Void) {
+    private func search(for query: String, within region: MKCoordinateRegion, geometry: Geometry? = nil, completion: @escaping ([MKAnnotation]) -> Void) {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.resultTypes = .pointOfInterest
@@ -218,20 +250,34 @@ class MapViewModel: ObservableObject {
                 return
             }
 
-            if let response = response {
-                let newAnnotations = response.mapItems.map { item in
-                    let annotation = MKPointAnnotation()
-                    annotation.coordinate = item.placemark.coordinate
-                    annotation.title = item.name
-                    return annotation
-                }
-                completion(newAnnotations)
-            } else {
+            guard let response = response else {
                 completion([])
+                return
             }
+
+            let filteredAnnotations = response.mapItems.compactMap { item -> MKAnnotation? in
+                let coordinate = item.placemark.coordinate
+
+                // If geometry is provided, filter by checking if the point is within the polygon
+                if let geometry = geometry, case let .polygon(coordinatesArray) = geometry.coordinates, let firstRing = coordinatesArray.first {
+                    if !self.pointInPolygon(point: coordinate, polygon: firstRing) {
+                        return nil
+                    }
+                }
+
+                // Create annotation if the point is within the polygon or no geometry is provided
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = coordinate
+                annotation.title = item.name
+                annotation.subtitle = query  // Store the query type for later reference
+
+                return annotation
+            }
+
+            completion(filteredAnnotations)
         }
     }
-    
+
     func displayMunicipioGeometry(_ municipio: Municipio) {
         guard let geometry = municipio.geometry else {
             print("No geometry found for municipio: \(municipio.displayFullName)")
@@ -316,16 +362,16 @@ class MapViewModel: ObservableObject {
             return
         }
         
-        // Create a new region centered at the centroid with an appropriate zoom level
-        let newRegion = MKCoordinateRegion(center: centroid, latitudinalMeters: 50000, longitudinalMeters: 50000)
+        // Define a region that covers the municipio area, with an appropriate span
+        let regionRadius = municipio.cityArea.map { sqrt($0) * 1000 } ?? 50000 // Estimate radius from area, or default to 50km if unavailable
+        let newRegion = MKCoordinateRegion(center: centroid, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
         
-        // Update the map's region to center on the new municipio
         DispatchQueue.main.async {
             self.region = newRegion
         }
     }
 
-    private func calculateCentroid(of geometry: Geometry) -> CLLocationCoordinate2D? {
+    func calculateCentroid(of geometry: Geometry) -> CLLocationCoordinate2D? {
         switch geometry.coordinates {
         case .polygon(let coordinatesArray):
             // Use the first ring (outer boundary) for centroid calculation

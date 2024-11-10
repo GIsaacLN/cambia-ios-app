@@ -12,6 +12,7 @@ struct MetricCardView: View {
     var value: String
     var icon: Image
     var color: Color = Color.gray.opacity(0.2)
+    var iconColor: Color = .teal
     var footer: String?
     var isLoading: Bool
     
@@ -19,7 +20,7 @@ struct MetricCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 icon
-                    .foregroundColor(.teal)
+                    .foregroundColor(iconColor)
                     .font(.system(size: 24))
                 
                 VStack(alignment: .leading) {

@@ -52,6 +52,7 @@ struct MetricsView: View {
                                 title: "Hospitales",
                                 value: "\(metricsViewModel.totalHospitalsInMunicipio) en total",
                                 icon: Image(systemName: "cross.fill"),
+                                iconColor: .red,
                                 footer: "Distancia promedio: \(formatValue(metricsViewModel.averageHospitalDistance)) km",
                                 isLoading: isLoading
                             )
@@ -60,6 +61,7 @@ struct MetricsView: View {
                                 title: "Policía",
                                 value: "\(metricsViewModel.totalPoliceStationsInMunicipio) estaciones",
                                 icon: Image(systemName: "shield.fill"),
+                                iconColor: .blue,
                                 footer: "Distancia promedio: \(formatValue(metricsViewModel.averagePoliceStationDistance)) km",
                                 isLoading: isLoading
                             )
@@ -68,6 +70,7 @@ struct MetricsView: View {
                                 title: "Bomberos",
                                 value: "\(metricsViewModel.totalFireStationsInMunicipio) estaciones",
                                 icon: Image(systemName: "flame.fill"),
+                                iconColor: .orange,
                                 footer: "Distancia promedio: \(formatValue(metricsViewModel.averageFireStationDistance)) km",
                                 isLoading: isLoading
                             )
@@ -90,7 +93,6 @@ struct MetricsView: View {
                 }
                 .onChange(of: settings.selectedMunicipio?.clave) {
                     loadData()
-                    metricsViewModel.updateMetrics()
                 }
             }
             .preferredColorScheme(.dark)

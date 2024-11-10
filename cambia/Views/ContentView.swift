@@ -48,10 +48,11 @@ struct ContentView: View {
                             mapViewModel.recenter(to: municipio)
                         }
                     }
-                    .onChange(of: settings.selectedMunicipio?.clave) { oldValue, newValue in
+                    .onChange(of: settings.selectedMunicipio?.clave) {
                         if let municipio = settings.selectedMunicipio {
                             mapViewModel.displayMunicipioGeometry(municipio)
                             mapViewModel.recenter(to: municipio)
+                            metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
                         }
                     }
             }
