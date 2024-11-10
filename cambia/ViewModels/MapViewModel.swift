@@ -57,22 +57,10 @@ class MapViewModel: ObservableObject {
     
     // MARK: - Update Layers for Selected Municipio
     func updateLayersForMunicipio(_ municipio: Municipio) {
-        overlays.removeAll()
-        annotations.removeAll()
-
         for layer in selectedLayers {
-            if case .geoJSON(let fileName) = layer.type {
-                addLayer(layer)
-            } else if case .pointsOfInterest(let query) = layer.type {
-                search(for: query, within: region, geometry: municipio.geometry) { newAnnotations in
-                    DispatchQueue.main.async {
-                        self.annotations.append(contentsOf: newAnnotations)
-                    }
-                }
-            }
+            selectedLayers.removeAll { $0 == layer }
+            removeLayer(layer)
         }
-        
-        recenter(to: municipio)
     }
 
     // MARK: - Layer Setup

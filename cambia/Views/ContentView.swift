@@ -52,23 +52,13 @@ struct ContentView: View {
                         if let municipio = settings.selectedMunicipio {
                             mapViewModel.displayMunicipioGeometry(municipio)
                             mapViewModel.recenter(to: municipio)
-                            
-                            // Trigger search for selected layers in the new region
-                            for layer in mapViewModel.selectedLayers {
-                                mapViewModel.addLayer(layer)
-                            }
                             metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
                         }
                     }
                     .onChange(of: mapViewModel.selectedLayers) {
                         if let municipio = settings.selectedMunicipio {
-                            mapViewModel.recenter(to: municipio)
-                            
                             // Clear previous annotations and re-add only for selected layers
                             mapViewModel.annotations.removeAll()
-                            for layer in mapViewModel.selectedLayers {
-                                mapViewModel.addLayer(layer)
-                            }
                         }
                     }
 
