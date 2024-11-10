@@ -125,10 +125,6 @@ struct MapViewRepresentable: UIViewRepresentable {
                 renderer.strokeColor = UIColor.white
                 renderer.lineWidth = 1.0
                 return renderer
-            } else if let pointAnnotation = overlay as? MKPointAnnotation {
-                let renderer = MKMarkerAnnotationView(annotation: pointAnnotation, reuseIdentifier: nil)
-                renderer.markerTintColor = .red // Personalizar según el tipo de riesgo si se desea
-                return MKOverlayRenderer(overlay: overlay)
             } else {
                 print("Unhandled overlay type: \(type(of: overlay))")
                 return MKOverlayRenderer(overlay: overlay)
@@ -142,7 +138,31 @@ struct MapViewRepresentable: UIViewRepresentable {
                 }
             }
         }
-        
+
+        // Customize annotation view for points of interest
+        func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+            guard let title = annotation.subtitle as? String else { return nil }
+
+            // Determine color based on title
+            let color: UIColor
+            switch title {
+            case "Hospital":
+                color = .systemRed
+            case "Police":
+                color = .systemBlue
+            case "Fire Station":
+                color = .systemOrange
+            default:
+                color = .systemGray
+            }
+
+            let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: nil)
+            annotationView.markerTintColor = color
+            annotationView.canShowCallout = true  // Allows for displaying the title in a callout
+
+            return annotationView
+        }
+
         // Handle region changes
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             DispatchQueue.main.async {

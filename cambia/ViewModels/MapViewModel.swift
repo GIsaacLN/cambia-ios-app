@@ -269,6 +269,8 @@ class MapViewModel: ObservableObject {
                 let annotation = MKPointAnnotation()
                 annotation.coordinate = coordinate
                 annotation.title = item.name
+                annotation.subtitle = query  // Store the query type for later reference
+
                 return annotation
             }
 
