@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AnalysisView: View {
-    @ObservedObject var metricsViewModel: MetricsViewModel
+    @EnvironmentObject var metricsViewModel: MetricsViewModel
     
     var body: some View {
         NavigationStack {
@@ -86,5 +86,6 @@ struct MetricRow: View {
 }
 
 #Preview{
-    AnalysisView(metricsViewModel: MetricsViewModel(mapViewModel: MapViewModel()))
+    AnalysisView()
+        .environmentObject(MetricsViewModel())
 }

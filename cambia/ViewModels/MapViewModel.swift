@@ -232,20 +232,133 @@ class MapViewModel: ObservableObject {
         }
     }
     
+    func displayMunicipioGeometry(_ municipio: Municipio) {
+        guard let geometry = municipio.geometry else {
+            print("No geometry found for municipio: \(municipio.displayFullName)")
+            return
+        }
+
+        var newOverlays: [MKOverlay] = []
+
+        // Add color and styling based on municipio type
+        let fillColor: UIColor = .gray.withAlphaComponent(0.3)
+        let strokeColor: UIColor = .white
+        let lineWidth: CGFloat = 1.0
+
+        // Convert 'geometry' to MKPolygon or MKMultiPolygon
+        if let overlay = convertGeometryToOverlay(geometry) {
+            if let styledPolygon = overlay as? MKPolygon {
+                let styledPolygon = StyledPolygon(points: styledPolygon.points(), count: styledPolygon.pointCount)
+                styledPolygon.fillColor = fillColor
+                styledPolygon.strokeColor = strokeColor
+                styledPolygon.lineWidth = lineWidth
+                newOverlays.append(styledPolygon)
+            }
+        } else {
+            print("Unable to convert geometry to overlay for municipio: \(municipio.displayFullName)")
+        }
+
+        // Clear previous overlays and add the new overlays
+        DispatchQueue.main.async {
+            self.overlays.removeAll()  // Clear previous overlays
+            self.overlays.append(contentsOf: newOverlays)
+        }
+    }
+
+    private func convertGeometryToOverlay(_ geometry: Geometry) -> MKOverlay? {
+        switch geometry.coordinates {
+        case .polygon(let coordinatesArray):
+            // coordinatesArray is [[[Double]]] - array of rings
+            var outerRingCoordinates: [CLLocationCoordinate2D] = []
+            var innerRings: [MKPolygon] = []
+
+            for (index, ringCoordinates) in coordinatesArray.enumerated() {
+                var coords: [CLLocationCoordinate2D] = []
+                for coordinate in ringCoordinates {
+                    if coordinate.count >= 2 {
+                        let longitude = coordinate[0]
+                        let latitude = coordinate[1]
+                        let coord = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        coords.append(coord)
+                    }
+                }
+                if !coords.isEmpty {
+                    if index == 0 {
+                        // Outer ring
+                        outerRingCoordinates = coords
+                    } else {
+                        // Inner rings (holes)
+                        let interiorPolygon = MKPolygon(coordinates: coords, count: coords.count)
+                        innerRings.append(interiorPolygon)
+                    }
+                }
+            }
+
+            if !outerRingCoordinates.isEmpty {
+                let polygon = MKPolygon(coordinates: outerRingCoordinates, count: outerRingCoordinates.count, interiorPolygons: innerRings)
+                return polygon
+            }
+        case .point(_):
+            // Handle point if needed
+            return nil
+        case .invalid:
+            return nil
+        }
+        return nil
+    }
+    
     // MARK:  - Recenter on municipality
     func recenter(to municipio: Municipio) {
-        // Obtener las coordenadas del municipio utilizando el enum
-        guard let coordinates = municipio.coordinates else { return }
+                // Calculate the centroid of the municipio's geometry
+        guard let geometry = municipio.geometry,
+              let centroid = calculateCentroid(of: geometry) else {
+            print("Unable to calculate centroid for municipio: \(municipio.displayFullName)")
+            return
+        }
         
-        // Crear una nueva región centrada en el municipio con un nivel de zoom adecuado
-        let newRegion = MKCoordinateRegion(
-            center: coordinates,
-            latitudinalMeters: 5000, // 1000 metros de altura
-            longitudinalMeters: 5000 // 1000 metros de anchura
-        )
+        // Create a new region centered at the centroid with an appropriate zoom level
+        let newRegion = MKCoordinateRegion(center: centroid, latitudinalMeters: 50000, longitudinalMeters: 50000)
         
-        // Actualizar la región del mapa para centrarse en el nuevo municipio
-        self.region = newRegion
+        // Update the map's region to center on the new municipio
+        DispatchQueue.main.async {
+            self.region = newRegion
+        }
     }
+
+    private func calculateCentroid(of geometry: Geometry) -> CLLocationCoordinate2D? {
+        switch geometry.coordinates {
+        case .polygon(let coordinatesArray):
+            // Use the first ring (outer boundary) for centroid calculation
+            guard let firstRing = coordinatesArray.first else { return nil }
+            var sumLatitude: Double = 0
+            var sumLongitude: Double = 0
+            let totalPoints = Double(firstRing.count)
+            
+            for coordinate in firstRing {
+                if coordinate.count >= 2 {
+                    let longitude = coordinate[0]
+                    let latitude = coordinate[1]
+                    sumLatitude += latitude
+                    sumLongitude += longitude
+                }
+            }
+            
+            if totalPoints > 0 {
+                let centroidLatitude = sumLatitude / totalPoints
+                let centroidLongitude = sumLongitude / totalPoints
+                return CLLocationCoordinate2D(latitude: centroidLatitude, longitude: centroidLongitude)
+            }
+        case .point(let point):
+            if point.count >= 2 {
+                let longitude = point[0]
+                let latitude = point[1]
+                return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            }
+        case .invalid:
+            return nil
+        }
+        return nil
+    }
+
 }
 

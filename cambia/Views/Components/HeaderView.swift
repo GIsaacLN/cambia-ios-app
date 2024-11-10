@@ -57,16 +57,16 @@ struct HeaderView: View {
         isSearchActive: .constant(true),
         searchText: .constant("Morelia"),
         filteredMunicipios: .constant([
-            Municipio(id: UUID(), nombre: "Morelia", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Guadalajara", estado: "Jalisco"),
-            Municipio(id: UUID(), nombre: "Pátzcuaro", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Zamora", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Monterrey", estado: "Nuevo León"),
-            Municipio(id: UUID(), nombre: "Cancún", estado: "Quintana Roo"),
-            Municipio(id: UUID(), nombre: "Tijuana", estado: "Baja California"),
-            Municipio(id: UUID(), nombre: "Culiacán", estado: "Sinaloa"),
-            Municipio(id: UUID(), nombre: "Toluca", estado: "Estado de México"),
-            Municipio(id: UUID(), nombre: "León", estado: "Guanajuato")
+            Municipio(nombre: "Morelia", estado: "Michoacán"),
+            Municipio(nombre: "Guadalajara", estado: "Jalisco"),
+            Municipio(nombre: "Pátzcuaro", estado: "Michoacán"),
+            Municipio(nombre: "Zamora", estado: "Michoacán"),
+            Municipio(nombre: "Monterrey", estado: "Nuevo León"),
+            Municipio(nombre: "Cancún", estado: "Quintana Roo"),
+            Municipio(nombre: "Tijuana", estado: "Baja California"),
+            Municipio(nombre: "Culiacán", estado: "Sinaloa"),
+            Municipio(nombre: "Toluca", estado: "Estado de México"),
+            Municipio(nombre: "León", estado: "Guanajuato")
         ])
     )
     .environmentObject(SelectedMunicipio())
@@ -77,16 +77,16 @@ struct HeaderView: View {
         isSearchActive: .constant(false),
         searchText: .constant("Morelia"),
         filteredMunicipios: .constant([
-            Municipio(id: UUID(), nombre: "Morelia", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Guadalajara", estado: "Jalisco"),
-            Municipio(id: UUID(), nombre: "Pátzcuaro", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Zamora", estado: "Michoacán"),
-            Municipio(id: UUID(), nombre: "Monterrey", estado: "Nuevo León"),
-            Municipio(id: UUID(), nombre: "Cancún", estado: "Quintana Roo"),
-            Municipio(id: UUID(), nombre: "Tijuana", estado: "Baja California"),
-            Municipio(id: UUID(), nombre: "Culiacán", estado: "Sinaloa"),
-            Municipio(id: UUID(), nombre: "Toluca", estado: "Estado de México"),
-            Municipio(id: UUID(), nombre: "León", estado: "Guanajuato")
+            Municipio(nombre: "Morelia", estado: "Michoacán"),
+            Municipio(nombre: "Guadalajara", estado: "Jalisco"),
+            Municipio(nombre: "Pátzcuaro", estado: "Michoacán"),
+            Municipio(nombre: "Zamora", estado: "Michoacán"),
+            Municipio(nombre: "Monterrey", estado: "Nuevo León"),
+            Municipio(nombre: "Cancún", estado: "Quintana Roo"),
+            Municipio(nombre: "Tijuana", estado: "Baja California"),
+            Municipio(nombre: "Culiacán", estado: "Sinaloa"),
+            Municipio(nombre: "Toluca", estado: "Estado de México"),
+            Municipio(nombre: "León", estado: "Guanajuato")
         ])
     )
     .environmentObject(SelectedMunicipio())

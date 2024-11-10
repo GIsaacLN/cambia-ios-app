@@ -62,9 +62,9 @@ struct SearchListView: View {
             isSearching: .constant(true),
             searchText: .constant(""),
             filteredMunicipios: .constant([
-                Municipio(id: UUID(), nombre: "Aguascalientes", estado: "Aguascalientes"),
-                Municipio(id: UUID(), nombre: "Durango", estado: "Durango"),
-                Municipio(id: UUID(), nombre: "Tepic", estado: "Nayarit")
+                Municipio(nombre: "Aguascalientes", estado: "Aguascalientes"),
+                Municipio(nombre: "Durango", estado: "Durango"),
+                Municipio(nombre: "Tepic", estado: "Nayarit")
             ])
         )
     }
@@ -76,11 +76,11 @@ struct SearchListView: View {
         isSearching: .constant(true),
         searchText: .constant(""),
         filteredMunicipios: .constant([
-            Municipio(id: UUID(), nombre: "Oaxaca", estado: "Oaxaca"),
-            Municipio(id: UUID(), nombre: "Veracruz", estado: "Veracruz"),
-            Municipio(id: UUID(), nombre: "La Paz", estado: "Baja California Sur"),
-            Municipio(id: UUID(), nombre: "Querétaro", estado: "Querétaro"),
-            Municipio(id: UUID(), nombre: "San Luis Potosí", estado: "San Luis Potosí")
+            Municipio(nombre: "Oaxaca", estado: "Oaxaca"),
+            Municipio(nombre: "Veracruz", estado: "Veracruz"),
+            Municipio(nombre: "La Paz", estado: "Baja California Sur"),
+            Municipio(nombre: "Querétaro", estado: "Querétaro"),
+            Municipio(nombre: "San Luis Potosí", estado: "San Luis Potosí")
         ])
     )
 }

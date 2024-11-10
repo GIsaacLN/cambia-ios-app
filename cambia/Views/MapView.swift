@@ -12,8 +12,9 @@ import MapKit
 
 struct MapView: View {
     // MARK: - Observed Object
-    @ObservedObject var viewModel: MapViewModel
-    
+    @EnvironmentObject var viewModel: MapViewModel
+    @EnvironmentObject var settings: SelectedMunicipio
+
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -37,7 +38,9 @@ struct MapView: View {
                         }
                         // MapUserLocationButton
                         Button(action: {
-                            //MARK: - Fix Later
+                            if let municipio = settings.selectedMunicipio {
+                                viewModel.recenter(to: municipio)
+                            }
                         }) {
                             Image(systemName: "location.fill")
                                 .frame(width: 44, height: 44)
@@ -153,5 +156,6 @@ struct LayerSelectionView: View {
 }
 
 #Preview{
-    MapView(viewModel: MapViewModel.init())
+    MapView()
+        .environmentObject(MapViewModel())
 }

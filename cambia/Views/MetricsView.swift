@@ -4,8 +4,8 @@
 import SwiftUI
 
 struct MetricsView: View {
-    @StateObject private var mapViewModel = MapViewModel()
-    @StateObject private var metricsViewModel: MetricsViewModel
+    @EnvironmentObject private var mapViewModel: MapViewModel
+    @EnvironmentObject private var metricsViewModel: MetricsViewModel
     
     @EnvironmentObject var settings: SelectedMunicipio
     @State private var isLoading = false
@@ -22,13 +22,7 @@ struct MetricsView: View {
         formatter.groupingSeparator = ","
         return formatter
     }
-    
-    init() {
-        let mapVM = MapViewModel()
-        _mapViewModel = StateObject(wrappedValue: mapVM)
-        _metricsViewModel = StateObject(wrappedValue: MetricsViewModel(mapViewModel: mapVM))
-    }
-    
+        
     var body: some View {
         ZStack{
             Color.gray5.ignoresSafeArea()
@@ -73,7 +67,7 @@ struct MetricsView: View {
                     }
                     .padding()
                 }
-                .onChange(of: settings.selectedMunicipio?.clave) { _ in
+                .onChange(of: settings.selectedMunicipio?.clave) {
                     loadData()
                     metricsViewModel.updateMetrics()
                 }
@@ -81,7 +75,7 @@ struct MetricsView: View {
         }
     }
     
-    // MARK: - Data Loading
+    // MARK: - INEGI Data Loading
     private func loadData() {
         isLoading = true
         DispatchQueue.global(qos: .background).async {
@@ -101,30 +95,6 @@ struct MetricsView: View {
                         self.metricsViewModel.inegiData = fetchedData
                     }
                 }
-            }
-            
-            if let jsonURL = Bundle.main.url(forResource: "inundacionmunicipio", withExtension: "json") {
-                do {
-                    let data = try Data(contentsOf: jsonURL)
-                    let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
-                    
-                    if let municipioFeature = geoJSON.features.first(where: { $0.properties.clv == settings.selectedMunicipio?.clave }) {
-                        DispatchQueue.main.async {
-                            self.metricsViewModel.cityArea = municipioFeature.properties.areaKm ?? 0.0
-                            self.metricsViewModel.inundatedArea = municipioFeature.properties.areaInun ?? 0.0
-                            self.metricsViewModel.populationVulnerability = municipioFeature.properties.iviPob20 ?? 0
-                            self.metricsViewModel.vulnerabilityIndex = municipioFeature.properties.iviVulne ?? "N/A"
-                            self.metricsViewModel.floodHazardLevel = municipioFeature.properties.peligroIn ?? "N/A"
-                            self.metricsViewModel.threshold12h = municipioFeature.properties.umbral12h ?? 0.0
-                        }
-                    } else {
-                        print("Municipio not found in JSON.")
-                    }
-                } catch {
-                    print("Error loading or parsing JSON: \(error)")
-                }
-            } else {
-                print("inundacionmunicipio.json not found.")
             }
         }
     }
@@ -251,7 +221,7 @@ struct MetricsView: View {
     private func cityArea() -> some View {
         MetricCard(
             title: "SUPERFICIE DE LA CIUDAD",
-            value: formatValue(metricsViewModel.cityArea),
+            value: formatValue(settings.selectedMunicipio?.cityArea),
             unit: "Km²"
         )
     }
@@ -259,7 +229,7 @@ struct MetricsView: View {
     private func floodedArea() -> some View {
         MetricCard(
             title: "SUPERFICIE PROPENSA A INUNDACIONES",
-            value: formatValue(metricsViewModel.inundatedArea),
+            value: formatValue(settings.selectedMunicipio?.inundatedArea),
             unit: "Km²",
             icon: "water.waves",
             width: 285
@@ -269,7 +239,7 @@ struct MetricsView: View {
     private func vulnerabilityIndex() -> some View {
         MetricCard(
             title: "VULNERABILIDAD",
-            value: metricsViewModel.vulnerabilityIndex ?? "N/A",
+            value: settings.selectedMunicipio?.vulnerabilityIndex ?? "N/A",
             unit: "Nivel"
         )
     }
@@ -277,7 +247,7 @@ struct MetricsView: View {
     private func floodedAreaPercentage() -> some View {
         MetricCard(
             title: "PORCENTAJE ÁREA INUNDADA",
-            value: formatValue(metricsViewModel.inundatedArea),
+            value: formatValue(settings.selectedMunicipio?.inundatedArea),
             unit: "%",
             icon: "water.waves",
             width: 280
@@ -287,7 +257,7 @@ struct MetricsView: View {
     private func floodHazardIndex() -> some View {
         MetricCard(
             title: "PELIGRO DE INUNDACIÓN",
-            value: metricsViewModel.floodHazardLevel ?? "N/A",
+            value: settings.selectedMunicipio?.floodHazardLevel ?? "N/A",
             unit: "Nivel",
             icon: "water.waves.and.arrow.trianglehead.down.trianglebadge.exclamationmark"
         )
@@ -448,4 +418,7 @@ struct MetricsView: View {
 #Preview {
     MetricsView()
         .environmentObject(SelectedMunicipio())
+        .environmentObject(MapViewModel())
+        .environmentObject(MetricsViewModel())
+
 }

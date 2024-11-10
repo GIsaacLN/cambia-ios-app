@@ -17,6 +17,7 @@ struct GeoJSON: Codable {
 struct Feature: Codable {
     let type: String
     let properties: Properties
+    let geometry: Geometry
 }
 
 enum Coordinates: Codable {
@@ -61,7 +62,55 @@ enum Coordinates: Codable {
 // Geometry struct for polygon coordinates
 struct Geometry: Codable {
     let type: String
-    let coordinates: [[[Double]]]
+    let coordinates: Coordinates
+    
+    enum Coordinates: Codable {
+        case point([Double])
+        case polygon([[[Double]]])
+        case invalid
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            
+            // Try decoding as a single point (array of doubles)
+            if let point = try? container.decode([Double].self) {
+                self = .point(point)
+                return
+            }
+            
+            // Try decoding as a polygon (3D array)
+            if let polygon = try? container.decode([[[Double]]].self) {
+                self = .polygon(polygon)
+                return
+            }
+            
+            // Fallback if the structure is unexpected
+            self = .invalid
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .point(let point):
+                try container.encode(point)
+            case .polygon(let polygon):
+                try container.encode(polygon)
+            case .invalid:
+                throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Invalid coordinate type"))
+            }
+        }
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case coordinates
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        coordinates = try container.decode(Coordinates.self, forKey: .coordinates)
+    }
 }
 
 struct Properties: Codable {
