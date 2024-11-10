@@ -217,31 +217,10 @@ class MetricsViewModel: ObservableObject {
                 let centro = CLLocation(latitude: centroid.latitude, longitude: centroid.longitude)
                 let distance = location.distance(from: centro) // in meters
 
-                // Print details of each item
-                if let name = item.name {
-                    print("Name: \(name)")
-                }
-                print("Coordinate: \(item.placemark.coordinate.latitude), \(item.placemark.coordinate.longitude)")
-
-                // Construct and print the address manually
-                let street = item.placemark.thoroughfare ?? ""
-                let subStreet = item.placemark.subThoroughfare ?? ""
-                let city = item.placemark.locality ?? ""
-                let state = item.placemark.administrativeArea ?? ""
-                let postalCode = item.placemark.postalCode ?? ""
-                let address = "\(subStreet) \(street), \(city), \(state) \(postalCode)"
-                print("Address: \(address)")
-
-                print("Distance from centroid: \(distance) meters")
-                print("-------------------")
-
                 return sum + distance
             }
 
             let averageDistance = totalItems > 0 ? totalDistance / Double(totalItems) / 1000.0 : 0.0
-            print("Total distance: \(totalDistance) meters")
-            print("Average distance: \(averageDistance) kilometers")
-
             completion(totalItems, averageDistance)
         }
     }

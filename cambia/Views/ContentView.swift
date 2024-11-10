@@ -55,13 +55,6 @@ struct ContentView: View {
                             metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
                         }
                     }
-                    .onChange(of: mapViewModel.selectedLayers) {
-                        if let municipio = settings.selectedMunicipio {
-                            // Clear previous annotations and re-add only for selected layers
-                            mapViewModel.annotations.removeAll()
-                        }
-                    }
-
             }
             .padding(.horizontal)
             .background(Color.gray5.edgesIgnoringSafeArea(.all))
