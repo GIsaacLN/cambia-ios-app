@@ -141,24 +141,64 @@ struct MapViewRepresentable: UIViewRepresentable {
 
         // Customize annotation view for points of interest
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            guard let title = annotation.subtitle as? String else { return nil }
+            guard let subtitle = annotation.subtitle as? String else { return nil }
 
-            // Determine color based on title
-            let color: UIColor
-            switch title {
-            case "Hospital":
-                color = .systemRed
-            case "Police":
-                color = .systemBlue
-            case "Fire Station":
-                color = .systemOrange
-            default:
-                color = .systemGray
+            // Define a reusable identifier for the annotation view
+            let identifier = "CustomAnnotationView"
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
+            
+            if annotationView == nil {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                annotationView?.canShowCallout = true  // Enable callouts for titles
+            } else {
+                annotationView?.annotation = annotation
             }
 
-            let annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: nil)
-            annotationView.markerTintColor = color
-            annotationView.canShowCallout = true  // Allows for displaying the title in a callout
+            // Configure the background color and icon based on annotation type with softer colors
+            var backgroundColor: UIColor
+            var symbolName: String
+            
+            switch subtitle {
+            case "Hospital":
+                backgroundColor = UIColor.systemRed
+                symbolName = "cross.fill"
+            case "Police":
+                backgroundColor = UIColor.systemBlue
+                symbolName = "shield.fill"
+            case "Fire Station":
+                backgroundColor = UIColor.systemOrange
+                symbolName = "flame.fill"
+            default:
+                backgroundColor = UIColor.systemGray
+                symbolName = "mappin.circle.fill"
+            }
+            
+            // Create a rounded rectangular background for the icon
+            let backgroundSize = CGSize(width: 35, height: 35)
+            let symbolSize: CGFloat = 20
+
+            let backgroundView = UIView(frame: CGRect(origin: .zero, size: backgroundSize))
+            backgroundView.backgroundColor = backgroundColor
+            backgroundView.layer.cornerRadius = backgroundSize.height / 2  // Makes it rounded
+            backgroundView.clipsToBounds = false  // Allows shadow to show outside of bounds
+
+            // Add a subtle shadow
+            backgroundView.layer.shadowColor = UIColor.black.cgColor
+            backgroundView.layer.shadowOffset = CGSize(width: 0, height: 2)
+            backgroundView.layer.shadowOpacity = 0.3
+            backgroundView.layer.shadowRadius = 3
+
+            // Center the SF Symbol within the background
+            let symbolImage = UIImageView(image: UIImage(systemName: symbolName))
+            symbolImage.tintColor = .white
+            symbolImage.frame = CGRect(x: (backgroundSize.width - symbolSize) / 2, y: (backgroundSize.height - symbolSize) / 2, width: symbolSize, height: symbolSize)
+            backgroundView.addSubview(symbolImage)
+
+            // Render the background view with the icon and shadow as an image for the annotation view
+            UIGraphicsBeginImageContextWithOptions(backgroundView.bounds.size, false, 0.0)
+            backgroundView.layer.render(in: UIGraphicsGetCurrentContext()!)
+            annotationView?.image = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
 
             return annotationView
         }

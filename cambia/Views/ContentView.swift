@@ -30,9 +30,6 @@ struct ContentView: View {
                         Tab("Análisis", systemImage: "books.vertical") {
                             AnalysisView()
                         }
-                        Tab("Fixdata", systemImage: "play") {
-                            Text("Placeholder content")
-                        }
                     }
                     .tabViewStyle(.tabBarOnly)
                     .preferredColorScheme(.dark)
