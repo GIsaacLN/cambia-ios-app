@@ -27,12 +27,6 @@ class MetricsViewModel: ObservableObject {
     @Published var inegiData: InegiData? {
         didSet { updateMetrics() }
     }
-    @Published var selectedMunicipio: Municipio? {
-        didSet {
-            performPrediction()
-        }
-    }
-
 
     private var cancellables = Set<AnyCancellable>()
     private var floodRiskModel: CambiaModel?
@@ -67,7 +61,7 @@ class MetricsViewModel: ObservableObject {
         
     
     // MARK: - Perform Prediction
-    func performPrediction() {
+    func performPrediction(selectedMunicipio: Municipio?) {
         guard let municipio = selectedMunicipio else {
             floodRiskPrediction = "No hay un municipio seleccionado"
             return

@@ -82,7 +82,10 @@ struct AnalysisView: View {
             //}
         }
         .onAppear {
-            metricsViewModel.performPrediction()
+            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
+        }
+        .onChange (of: settings.selectedMunicipio?.clave) {
+            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
         }
     }
     
