@@ -52,7 +52,7 @@ struct MetricCardView: View {
         }
         .padding()
         .background(color)
-        .cornerRadius(12)
+        .cornerRadius(10)
         .shadow(radius: 4)
     }
 }

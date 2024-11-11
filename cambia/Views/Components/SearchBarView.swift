@@ -7,33 +7,19 @@
 
 import SwiftUI
 
-struct HeaderView: View {
+struct SearchBarView: View {
     @Binding var isSearchActive: Bool
     @Binding var searchText: String
     @Binding var filteredMunicipios: [Municipio]
-    @EnvironmentObject var settings: SelectedMunicipio
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             ZStack{
-                HStack {
-                    Text(settings.selectedMunicipio?.displayFullName ?? "Selecciona un Municipio")
-                    
-                    if isSearchActive {
-                        SearchView(isSearching: $isSearchActive, searchText: $searchText)
-                    } else {
-                        Button {
-                            isSearchActive = true
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundStyle(Color.teal)
-                        }
-                    }
-                }
-                .padding()
+                SearchView(isSearching: $isSearchActive, searchText: $searchText)
+                    .padding()
                 
                 // Display SearchListView as a popup below the search bar when active
-                if isSearchActive {
+                if searchText != "" && !searchText.isEmpty {
                     SearchListView(
                         isSearching: $isSearchActive,
                         searchText: $searchText,
@@ -42,18 +28,18 @@ struct HeaderView: View {
                     .frame(height: 300)
                     .cornerRadius(10)
                     .shadow(radius: 5)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 30)
                     .transition(.move(edge: .top))
-                    .offset(y:170)
+                    .offset(y:200)
                 }
             }
         }
-        .frame(maxWidth: 500, maxHeight: 60)
+        .frame(maxHeight: 60)
     }
 }
 
 #Preview {
-    HeaderView(
+    SearchBarView(
         isSearchActive: .constant(true),
         searchText: .constant("Morelia"),
         filteredMunicipios: .constant([
@@ -69,25 +55,23 @@ struct HeaderView: View {
             Municipio(nombre: "León", estado: "Guanajuato")
         ])
     )
-    .environmentObject(SelectedMunicipio())
 }
 
 #Preview {
-    HeaderView(
-        isSearchActive: .constant(false),
-        searchText: .constant("Morelia"),
+    SearchBarView(
+        isSearchActive: .constant(true),
+        searchText: .constant("a"),
         filteredMunicipios: .constant([
             Municipio(nombre: "Morelia", estado: "Michoacán"),
-            Municipio(nombre: "Guadalajara", estado: "Jalisco"),
-            Municipio(nombre: "Pátzcuaro", estado: "Michoacán"),
-            Municipio(nombre: "Zamora", estado: "Michoacán"),
-            Municipio(nombre: "Monterrey", estado: "Nuevo León"),
-            Municipio(nombre: "Cancún", estado: "Quintana Roo"),
-            Municipio(nombre: "Tijuana", estado: "Baja California"),
-            Municipio(nombre: "Culiacán", estado: "Sinaloa"),
-            Municipio(nombre: "Toluca", estado: "Estado de México"),
-            Municipio(nombre: "León", estado: "Guanajuato")
+            Municipio(nombre: "Guadalajara", estado: "Jalisco")
         ])
     )
-    .environmentObject(SelectedMunicipio())
+}
+
+#Preview {
+    SearchBarView(
+        isSearchActive: .constant(true),
+        searchText: .constant("a"),
+        filteredMunicipios: .constant([])
+    )
 }

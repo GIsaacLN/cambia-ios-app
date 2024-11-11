@@ -163,4 +163,5 @@ struct LayerSelectionView: View {
 #Preview{
     MapView()
         .environmentObject(MapViewModel())
+        .environmentObject(SelectedMunicipio())
 }

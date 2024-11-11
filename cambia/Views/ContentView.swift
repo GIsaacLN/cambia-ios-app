@@ -17,7 +17,12 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             HStack {
-                ZStack (alignment: .top){
+                VStack{
+                    Text(settings.selectedMunicipio?.displayFullName ?? "Selecciona un Municipio")
+                        .padding()
+                        .font(.title)
+                        .bold()
+
                     TabView {
                         Tab("Métricas", systemImage: "play") {
                             MetricsView()
@@ -31,30 +36,29 @@ struct ContentView: View {
                     }
                     .tabViewStyle(.tabBarOnly)
                     .preferredColorScheme(.dark)
-                    .offset(y: 70)
-                    
-                    HeaderView(
-                        isSearchActive: $isSearchActive,
-                        searchText: $searchText,
-                        filteredMunicipios: $filteredMunicipios
-                    )
-                    .onChange(of: searchText) { filterMunicipios() }
                 }
-                MapView()
-                    .padding()
-                    .onAppear {
-                        if let municipio = settings.selectedMunicipio {
-                            mapViewModel.displayMunicipioGeometry(municipio)
-                            mapViewModel.recenter(to: municipio)
+                ZStack (alignment: .top){
+                    MapView()
+                        .offset(y: 70)
+                        .padding(.bottom, 50)
+                        .padding()
+                        .onAppear {
+                            if let municipio = settings.selectedMunicipio {
+                                mapViewModel.displayMunicipioGeometry(municipio)
+                                mapViewModel.recenter(to: municipio)
+                            }
                         }
-                    }
-                    .onChange(of: settings.selectedMunicipio?.clave) {
-                        if let municipio = settings.selectedMunicipio {
-                            mapViewModel.displayMunicipioGeometry(municipio)
-                            mapViewModel.recenter(to: municipio)
-                            metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
+                        .onChange(of: settings.selectedMunicipio?.clave) {
+                            if let municipio = settings.selectedMunicipio {
+                                mapViewModel.displayMunicipioGeometry(municipio)
+                                mapViewModel.recenter(to: municipio)
+                                metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
+                            }
                         }
-                    }
+                    
+                    SearchBarView(isSearchActive: $isSearchActive, searchText: $searchText,filteredMunicipios: $filteredMunicipios)
+                        .onChange(of: searchText) { filterMunicipios() }
+                }
             }
             .padding(.horizontal)
             .background(Color.gray5.edgesIgnoringSafeArea(.all))
