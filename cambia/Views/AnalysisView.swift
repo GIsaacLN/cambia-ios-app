@@ -92,15 +92,15 @@ struct AnalysisView: View {
     // Computed property para obtener el color según el nivel de riesgo
     private var riskColor: Color {
         switch metricsViewModel.floodRiskPrediction {
-        case "Muy Bajo":
+        case "Peligro de inundación: Muy bajo":
             return .green.opacity(0.2)
-        case "Bajo":
+        case "Peligro de inundación: Bajo":
             return .blue.opacity(0.2)
-        case "Medio":
+        case "Peligro de inundación: Medio":
             return .yellow.opacity(0.2)
-        case "Alto":
+        case "Peligro de inundación: Alto":
             return .orange.opacity(0.2)
-        case "Muy Alto":
+        case "Peligro de inundación: Muy alto":
             return .red.opacity(0.2)
         default:
             return .gray.opacity(0.2)
@@ -110,9 +110,9 @@ struct AnalysisView: View {
     // Computed property para obtener el ícono según el nivel de riesgo
     private var riskIcon: String {
         switch metricsViewModel.floodRiskPrediction {
-        case "Muy Bajo", "Bajo":
+        case "Peligro de inundación: Muy bajo", "Peligro de inundación: Bajo":
             return "checkmark.circle.fill"
-        case "Medio", "Alto", "Muy Alto":
+        case "Peligro de inundación: Medio", "Peligro de inundación: Alto", "Peligro de inundación: Muy alto":
             return "exclamationmark.triangle.fill"
         default:
             return "questionmark.circle.fill"
