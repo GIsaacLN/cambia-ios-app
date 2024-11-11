@@ -1,6 +1,6 @@
 # Cambia 🌆
 
-**¡Bienvenido! Te recomendamos leer todo este README para comprender mejor [cómo instalar](#instalación-📲)  y usar Cambia, y apreciar el potencial de esta aplicación en la planificación urbana frente a desastres.**
+**¡Bienvenido! Te recomendamos leer todo este README para comprender mejor cómo instalar  y usar Cambia, y apreciar el potencial de esta aplicación en la planificación urbana frente a desastres.**
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/15578ef3-2ff3-47c8-96db-249625b09358" alt="SCMC_Cambia_Banner 001" height="300" style="display: block; margin: 0 auto">
@@ -18,7 +18,7 @@ Sigue estos pasos para configurar Cambia en tu máquina local:
 1. **Clona el Repositorio**:
    
    ```bash
-   git clone <url_del_repositorio>
+   git clone https://github.com/GIsaacLN/cambia-ios-app.git
    cd Cambia
    ```
    
