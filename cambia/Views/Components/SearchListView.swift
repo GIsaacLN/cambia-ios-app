@@ -13,7 +13,8 @@ struct SearchListView: View {
     @Binding var isSearching: Bool
     @Binding var searchText: String
     @Binding var filteredMunicipios: [Municipio]
-    let maxHeight: CGFloat = 400
+    let maxHeight: CGFloat = 600
+    let itemHeight: CGFloat = 50 // estimated height of each item
 
     var body: some View {
         ScrollView {
@@ -41,11 +42,16 @@ struct SearchListView: View {
                         .padding()
                 }
             }
+            .padding()
         }
         .foregroundStyle(.white)
         .background(Color("gray5"))
-        .frame(maxWidth: .infinity, minHeight: 100, maxHeight: maxHeight)
-        .cornerRadius(20)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: 80,
+            maxHeight: 300
+        )
+        .cornerRadius(10)
         .padding(.vertical)
     }
 }

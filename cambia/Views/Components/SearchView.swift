@@ -12,22 +12,33 @@ struct SearchView: View {
     @Binding var searchText: String
     
     var body: some View {
-        HStack {
-            TextField("Buscar Municipio", text: $searchText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-            
-            Button("Cancel") {
-                isSearching = false
-                searchText = ""
+        
+        ZStack {
+            Color.gray6.opacity(0.7)
+                .cornerRadius(10)
+            HStack {
+                TextField("\(Image(systemName: "magnifyingglass"))  Buscar Municipio", text: $searchText)
+                    .padding(.horizontal)
+                    .foregroundStyle(.white)
+                    .preferredColorScheme(.dark)
+                
+                if searchText != "" && !searchText.isEmpty{
+                    Button("Cancel") {
+                        searchText = ""
+                    }
+                    .foregroundStyle(Color.teal)
+                }
             }
-            .foregroundStyle(Color.teal)
+            .padding()
         }
         .frame(height: 40)
-        .padding()
     }
 }
 
 #Preview {
     SearchView(isSearching: .constant(true), searchText: .constant("X"))
+}
+
+#Preview {
+    SearchView(isSearching: .constant(false), searchText: .constant(""))
 }
