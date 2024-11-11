@@ -3,6 +3,7 @@ import Charts
 
 struct AnalysisView: View {
     @EnvironmentObject var metricsViewModel: MetricsViewModel
+    @EnvironmentObject var settings: SelectedMunicipio
     @State var oberlayDataServivios: Bool = false
     @State var showDistribucionOverlay: Bool = false
     @State var ShowPrediccióndeInundación: Bool = true
@@ -24,13 +25,13 @@ struct AnalysisView: View {
                         
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.blue.opacity(0.2))
+                                .fill(riskColor)
                                 .frame(height: 80)
                             
                             HStack {
-                                Image(systemName: metricsViewModel.floodRiskPrediction.contains("Alto") ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                                Image(systemName: riskIcon)
                                     .font(.system(size: 40))
-                                    .foregroundColor(metricsViewModel.floodRiskPrediction.contains("Alto") ? .red : .green)
+                                    .foregroundColor(riskColor.opacity(0.8))
                                 Spacer()
                                 Text(metricsViewModel.floodRiskPrediction)
                                     .font(.headline)
@@ -58,11 +59,11 @@ struct AnalysisView: View {
                                 .foregroundColor(.white.opacity(0.7))
                             
                             MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
-                            MetricRow(title: "Área Inundada", value: metricsViewModel.inundatedArea.map { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
+                            MetricRow(title: "Área Inundada", value: settings.selectedMunicipio?.inundatedArea.map() { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
                             MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
                             MetricRow(title: "Distancia promedio al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.averageHospitalDistance)) km")
                             MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.totalHospitalsInMunicipio)")
-                            MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", metricsViewModel.cityArea ?? 0)) Km²")
+                            MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", settings.selectedMunicipio?.cityArea ?? 0)) Km²")
                         }
                     }
                     
@@ -81,11 +82,43 @@ struct AnalysisView: View {
             //}
         }
         .onAppear {
-            metricsViewModel.performPrediction()
+            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
+        }
+        .onChange (of: settings.selectedMunicipio?.clave) {
+            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
         }
     }
     
-    
+    // Computed property para obtener el color según el nivel de riesgo
+    private var riskColor: Color {
+        switch metricsViewModel.floodRiskPrediction {
+        case "Muy Bajo":
+            return .green.opacity(0.2)
+        case "Bajo":
+            return .blue.opacity(0.2)
+        case "Medio":
+            return .yellow.opacity(0.2)
+        case "Alto":
+            return .orange.opacity(0.2)
+        case "Muy Alto":
+            return .red.opacity(0.2)
+        default:
+            return .gray.opacity(0.2)
+        }
+    }
+
+    // Computed property para obtener el ícono según el nivel de riesgo
+    private var riskIcon: String {
+        switch metricsViewModel.floodRiskPrediction {
+        case "Muy Bajo", "Bajo":
+            return "checkmark.circle.fill"
+        case "Medio", "Alto", "Muy Alto":
+            return "exclamationmark.triangle.fill"
+        default:
+            return "questionmark.circle.fill"
+        }
+    }
+
     func GraficaServiciosBasicos() -> some View {
         VStack {
            Text("Servicios Básicos")

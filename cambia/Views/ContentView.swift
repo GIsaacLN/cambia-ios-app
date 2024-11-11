@@ -88,13 +88,16 @@ struct ContentView: View {
                     populationVulnerability: properties.iviPob20,
                     vulnerabilityIndex: properties.iviVulne,
                     floodHazardLevel: properties.peligroIn,
-                    threshold12h: properties.umbral12h
+                    threshold12h: properties.umbral12h,
+                    threshold: properties.umbral,
+                    porcentajeInundado: properties.porcentaje
+                    
                 )
             }
         } catch {
             print("Error decoding JSON: \(error)")
         }
-    }
+}
 
     private func filterMunicipios() {
         //Normaliza el texto para eliminar acentos y haciendolo minusculas para mejorar la busqueda

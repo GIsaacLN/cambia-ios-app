@@ -24,8 +24,10 @@ struct Municipio: Identifiable {
     var vulnerabilityIndex: String?
     var floodHazardLevel: String?
     var threshold12h: Double?
+    var threshold: Double?
+    var porcentajeInundado: Double?
     
-    init(nombre: String? = nil, clave: String? = nil, estado: String? = nil, coordinates: CLLocationCoordinate2D? = nil, geometry: Geometry? = nil, cityArea: Double? = nil, inundatedArea: Double? = nil, populationVulnerability: Int? = nil, vulnerabilityIndex: String? = nil, floodHazardLevel: String? = nil, threshold12h: Double? = nil) {
+    init(nombre: String? = nil, clave: String? = nil, estado: String? = nil, coordinates: CLLocationCoordinate2D? = nil, geometry: Geometry? = nil, cityArea: Double? = nil, inundatedArea: Double? = nil, populationVulnerability: Int? = nil, vulnerabilityIndex: String? = nil, floodHazardLevel: String? = nil, threshold12h: Double? = nil, threshold: Double? = nil, porcentajeInundado: Double? = nil) {
         self.nombre = nombre
         self.clave = clave
         self.estado = estado
@@ -37,6 +39,8 @@ struct Municipio: Identifiable {
         self.vulnerabilityIndex = vulnerabilityIndex
         self.floodHazardLevel = floodHazardLevel
         self.threshold12h = threshold12h
+        self.threshold = threshold
+        self.porcentajeInundado = porcentajeInundado
     }
     
     var displayFullName: String {
