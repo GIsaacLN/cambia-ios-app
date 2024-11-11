@@ -35,7 +35,7 @@ class MetricsViewModel: ObservableObject {
 
 
     private var cancellables = Set<AnyCancellable>()
-    private var floodRiskModel: Riskmodel2?
+    private var floodRiskModel: CambiaModel?
     
     // MARK: - Initialization
     init() {
@@ -45,7 +45,7 @@ class MetricsViewModel: ObservableObject {
     // MARK: - Load ML Model
     private func loadModel() {
         do {
-            self.floodRiskModel = try RiskModel2(configuration: MLModelConfiguration())
+            self.floodRiskModel = try CambiaModel(configuration: MLModelConfiguration())
         } catch {
             print("Error al cargar el modelo ML: \(error)")
         }
@@ -85,10 +85,10 @@ class MetricsViewModel: ObservableObject {
         }
         
         do {
-            let input = RiskModel2Input(
-                IVI_POB20: ivi_pob20,
-                IVI_VULNE: ivi_vulne,
+            let input = CambiaModelInput(
+                IVI__POB20: Int64(ivi_pob20),
                 UMBRAL12H: umbral12h,
+                IVI__VULNE: ivi_vulne,
                 AREAKMKM: areakmkm,
                 AREA_INUN: area_inun,
                 PORCENTA_1: porcenta_1
