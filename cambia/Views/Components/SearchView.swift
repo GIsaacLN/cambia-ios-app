@@ -12,7 +12,6 @@ struct SearchView: View {
     @Binding var searchText: String
     
     var body: some View {
-        
         ZStack {
             Color.gray6.opacity(0.7)
                 .cornerRadius(10)
@@ -21,12 +20,15 @@ struct SearchView: View {
                     .padding(.horizontal)
                     .foregroundStyle(.white)
                     .preferredColorScheme(.dark)
+                    .accessibilityLabel("Buscar municipio")
+                    .accessibilityHint("Escribe para filtrar la lista de municipios")
                 
                 if searchText != "" && !searchText.isEmpty{
-                    Button("Cancel") {
+                    Button("Cancelar") {
                         searchText = ""
                     }
                     .foregroundStyle(Color.teal)
+                    .accessibilityLabel("Cancelar búsqueda")
                 }
             }
             .padding()

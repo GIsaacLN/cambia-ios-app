@@ -21,12 +21,11 @@ struct MapView: View {
             MapViewRepresentable(
                 viewModel: viewModel
             )
-//            .frame(width: 560,height: 690)
             VStack {
                 HStack {
                     Spacer()
                     VStack (alignment:.trailing){
-                        // MapPitchToggle
+                        // Botón para cambiar vista del mapa
                         Button(action: {
                             viewModel.togglePitchTrigger = true
                         }) {
@@ -36,7 +35,10 @@ struct MapView: View {
                                 .foregroundStyle(.white)
                                 .cornerRadius(10)
                         }
-                        // MapUserLocationButton
+                        .accessibilityLabel("Cambiar ángulo del mapa")
+                        .accessibilityHint("Toca para cambiar la vista del mapa")
+                        
+                        // Botón para centrar mapa
                         Button(action: {
                             if let municipio = settings.selectedMunicipio {
                                 viewModel.recenter(to: municipio)
@@ -48,13 +50,21 @@ struct MapView: View {
                                 .foregroundStyle(.white)
                                 .cornerRadius(10)
                         }
-                        // Zoom buttons
+                        .accessibilityLabel("Centrar mapa")
+                        .accessibilityHint("Centrar el mapa en el municipio seleccionado")
+
+                        // Botón para acercar
                         ZoomButtonView(zoomIn: true) {
                             viewModel.zoomInTrigger = true
                         }
+                        .accessibilityHidden(true) // Opcional si no es necesario para usuarios de VoiceOver
+
+                        // Botón para alejar
                         ZoomButtonView(zoomIn: false) {
                             viewModel.zoomOutTrigger = true
                         }
+                        .accessibilityHidden(true) // Opcional si no es necesario para usuarios de VoiceOver
+
                         // Layer Selection Button
                         Button(action: {
                             viewModel.showLayerSelection.toggle()
@@ -66,6 +76,8 @@ struct MapView: View {
                                 .cornerRadius(10)
                                 .opacity(viewModel.showLayerSelection ? 0.7  : 1)
                         }
+                        .accessibilityHidden(true) // Opcional si no es necesario para usuarios de VoiceOver
+
                         if viewModel.showLayerSelection {
                             LayerSelectionView(viewModel: viewModel)
                                 .cornerRadius(10)
@@ -80,6 +92,7 @@ struct MapView: View {
                 if viewModel.isFloodLayerSelected {
                     HStack {
                         ColorScaleLegendView()
+                            .accessibilityHidden(true)
                         Spacer()
                     }
                     .padding([.leading, .bottom], 16)

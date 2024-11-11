@@ -13,6 +13,7 @@ struct ColorScaleLegendView: View {
             Text("Nivel de Riesgo")
                 .font(.headline)
                 .padding(.bottom, 4)
+                .accessibilityHidden(true)
             HStack {
                 Color.blue.frame(width: 20, height: 20)
                 Text("Muy bajo")

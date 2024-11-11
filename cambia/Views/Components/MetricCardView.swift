@@ -27,19 +27,20 @@ struct MetricCardView: View {
                     Text(title)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .accessibilityLabel("Métrica: \(title)")
 
                     if isLoading {
                         ProgressView()
+                            .accessibilityLabel("Cargando valor de la métrica")
                     } else {
                         Text(value)
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
+                            .accessibilityValue(value)
                     }
-                    
                 }
                 .padding(.leading, 8)
-                
                 Spacer()
             }
             
@@ -48,6 +49,7 @@ struct MetricCardView: View {
                     .font(.footnote)
                     .foregroundColor(.secondary)
                     .padding(.top, 4)
+                    .accessibilityLabel("Información adicional: \(footerText)")
             }
         }
         .padding()
