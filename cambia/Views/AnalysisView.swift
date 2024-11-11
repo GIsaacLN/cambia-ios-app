@@ -3,6 +3,7 @@ import Charts
 
 struct AnalysisView: View {
     @EnvironmentObject var metricsViewModel: MetricsViewModel
+    @EnvironmentObject var settings: SelectedMunicipio
     @State var oberlayDataServivios: Bool = false
     @State var showDistribucionOverlay: Bool = false
     @State var ShowPrediccióndeInundación: Bool = true
@@ -58,11 +59,11 @@ struct AnalysisView: View {
                                 .foregroundColor(.white.opacity(0.7))
                             
                             MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
-                            MetricRow(title: "Área Inundada", value: metricsViewModel.inundatedArea.map { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
+                            MetricRow(title: "Área Inundada", value: settings.selectedMunicipio?.inundatedArea.map() { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
                             MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
                             MetricRow(title: "Distancia promedio al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.averageHospitalDistance)) km")
                             MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.totalHospitalsInMunicipio)")
-                            MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", metricsViewModel.cityArea ?? 0)) Km²")
+                            MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", settings.selectedMunicipio?.cityArea ?? 0)) Km²")
                         }
                     }
                     

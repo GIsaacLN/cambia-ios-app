@@ -74,26 +74,29 @@ struct ContentView: View {
         }
         
         do {
-            let data = try Data(contentsOf: url)
-            let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
-            municipios = geoJSON.features.map { feature in
-                let properties = feature.properties
-                return Municipio(
-                    nombre: properties.nomMun,
-                    clave: properties.clv,
-                    estado: properties.iviEstad?.capitalized,
-                    geometry: feature.geometry,
-                    cityArea: properties.areaKm,
-                    inundatedArea: properties.areaInun,
-                    populationVulnerability: properties.iviPob20,
-                    vulnerabilityIndex: properties.iviVulne,
-                    floodHazardLevel: properties.peligroIn,
-                    threshold12h: properties.umbral12h
-                )
-            }
-        } catch {
-            print("Error decoding JSON: \(error)")
-        }
+                    let data = try Data(contentsOf: url)
+                    let geoJSON = try JSONDecoder().decode(GeoJSON.self, from: data)
+                    municipios = geoJSON.features.map { feature in
+                        let properties = feature.properties
+                        return Municipio(
+                            nombre: properties.nomMun,
+                            clave: properties.clv,
+                            estado: properties.iviEstad?.capitalized,
+                            geometry: feature.geometry,
+                            cityArea: properties.areaKm,
+                            inundatedArea: properties.areaInun,
+                            populationVulnerability: properties.iviPob20,
+                            vulnerabilityIndex: properties.iviVulne,
+                            floodHazardLevel: properties.peligroIn,
+                            threshold12h: properties.umbral12h,
+                            threshold: properties.umbral,
+                            porcentajeInundado: properties.porcentaje
+                            
+                        )
+                    }
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
     }
 
     private func filterMunicipios() {

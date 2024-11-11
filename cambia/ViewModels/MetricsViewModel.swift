@@ -27,9 +27,15 @@ class MetricsViewModel: ObservableObject {
     @Published var inegiData: InegiData? {
         didSet { updateMetrics() }
     }
+    @Published var selectedMunicipio: Municipio? {
+        didSet {
+            performPrediction()
+        }
+    }
+
 
     private var cancellables = Set<AnyCancellable>()
-    private var floodRiskModel: FloodRiskPredictor?
+    private var floodRiskModel: Riskmodel2?
     
     // MARK: - Initialization
     init() {
@@ -39,7 +45,7 @@ class MetricsViewModel: ObservableObject {
     // MARK: - Load ML Model
     private func loadModel() {
         do {
-            self.floodRiskModel = try FloodRiskPredictor(configuration: MLModelConfiguration())
+            self.floodRiskModel = try RiskModel2(configuration: MLModelConfiguration())
         } catch {
             print("Error al cargar el modelo ML: \(error)")
         }
@@ -59,72 +65,46 @@ class MetricsViewModel: ObservableObject {
         annualPrecipitation = 840.0
     }
         
-    /* TODO: - Delete if not useful
-    private func updateRiskMetrics(fileType: String, metric: inout String?, userCoordinate: CLLocationCoordinate2D, label: String) {
-        if let overlayLayer = mapViewModel.availableLayers.first(where: { $0.type == .geoJSON(fileType) }),
-           mapViewModel.selectedLayers.contains(overlayLayer),
-           let overlays = mapViewModel.layerOverlays[overlayLayer.id] {
-
-            let mapPoint = MKMapPoint(userCoordinate)
-            var isInRiskZone = false
-
-            for overlay in overlays {
-                if let polygon = overlay as? MKPolygon, polygon.contains(coordinate: userCoordinate) {
-                    isInRiskZone = true
-                    break
-                }
-            }
-
-            metric = isInRiskZone ? "\(label): High" : "\(label): Low"
-        } else {
-            metric = "\(label): Not Available"
-        }
-    }*/
     
     // MARK: - Perform Prediction
     func performPrediction() {
-        // Retrieve densidadPoblacional from INEGI data
-        guard let inegiDensidad = inegiData?.indicators["densidad"],
-              let areaInundada = inundatedArea,
-              let precipitacionAnual = annualPrecipitation,
-              let floodHazardLevel = floodHazardLevel else {
-            floodRiskPrediction = "Datos insuficientes para la predicción"
-            print("Datos insuficientes para la predicción. Current values - Densidad: \(String(describing: inegiData?.indicators["densidad"])), Área Inundada: \(String(describing: inundatedArea)), Precipitación Anual: \(String(describing: annualPrecipitation)), Nivel de Riesgo: \(String(describing: floodHazardLevel))")
+        guard let municipio = selectedMunicipio else {
+            floodRiskPrediction = "No hay un municipio seleccionado"
             return
         }
-
-        // Use floodHazardLevel directly as NivelRiesgo
-        let nivelRiesgo: String
-        switch floodHazardLevel {
-        case "Muy alto", "Alto":
-            nivelRiesgo = "Alto"
-        case "Medio":
-            nivelRiesgo = "Medio"
-        default:
-            nivelRiesgo = "Bajo"
+        
+        // Extraer las propiedades necesarias del municipio
+        guard let ivi_pob20 = municipio.populationVulnerability,
+              let ivi_vulne = municipio.vulnerabilityIndex,
+              let umbral12h = municipio.threshold12h,
+              let areakmkm = municipio.cityArea,
+              let area_inun = municipio.inundatedArea,
+              let porcenta_1 = municipio.porcentajeInundado else {
+            floodRiskPrediction = "Datos insuficientes para la predicción"
+            return
         }
-
+        
         do {
-            let prediction = try floodRiskModel?.prediction(
-                DensidadPoblacional: Int64(inegiDensidad),
-                PrecipitacionAnual: Int64(precipitacionAnual),
-                AreaInundada: areaInundada,
-                NivelRiesgo: nivelRiesgo
+            let input = RiskModel2Input(
+                IVI_POB20: ivi_pob20,
+                IVI_VULNE: ivi_vulne,
+                UMBRAL12H: umbral12h,
+                AREAKMKM: areakmkm,
+                AREA_INUN: area_inun,
+                PORCENTA_1: porcenta_1
             )
-            
-            let riskLabel = prediction?.FloodRisk == 1 ? "Alto riesgo de inundación" : "Bajo riesgo de inundación"
-            
-            if let probability = prediction?.FloodRiskProbability[prediction?.FloodRisk ?? 0] {
-                floodRiskPrediction = "\(riskLabel) (Probabilidad: \(String(format: "%.2f", probability * 100))%)"
+
+            if let prediction = try floodRiskModel?.prediction(input: input) {
+                floodRiskPrediction = "Peligro de inundación: \(prediction.PELIGRO_IN)"
             } else {
-                floodRiskPrediction = riskLabel
+                floodRiskPrediction = "No se pudo obtener una predicción"
             }
-            
         } catch {
             floodRiskPrediction = "Error en la predicción"
             print("Error al realizar la predicción: \(error)")
         }
     }
+
 
     // Check if a given point is inside a polygon
     func pointInPolygon(point: CLLocationCoordinate2D, polygon: [[Double]]) -> Bool {
