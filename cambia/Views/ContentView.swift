@@ -7,7 +7,7 @@ import MapKit
 struct ContentView: View {
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var metricsViewModel = MetricsViewModel()
-    @StateObject private var settings = SelectedMunicipio()
+    @EnvironmentObject var settings: SelectedMunicipio
     
     @State private var isSearchActive: Bool = false
     @State private var searchText: String = ""
@@ -34,6 +34,7 @@ struct ContentView: View {
                     .tabViewStyle(.tabBarOnly)
                     .preferredColorScheme(.dark)
                 }
+                
                 ZStack (alignment: .top){
                     MapView()
                         .offset(y: 70)
@@ -59,8 +60,9 @@ struct ContentView: View {
             }
             .padding(.horizontal)
             .background(Color.gray5.edgesIgnoringSafeArea(.all))
-            .onAppear { loadData() }
-            .environmentObject(settings)
+            .onAppear {
+                loadData()
+            }
             .environmentObject(mapViewModel)
             .environmentObject(metricsViewModel)
 
@@ -108,6 +110,7 @@ struct ContentView: View {
         }
     }
 }
+
 
 #Preview {
     ContentView()
