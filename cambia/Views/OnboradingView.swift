@@ -211,7 +211,8 @@ extension SelectedMunicipio {
     }
 }
 
-//
-//#Preview {
-//    OnboardingView(settings: .init(Municipio(nombre: "Oaxaca", estado: "Oaxaca")), switchView:{} )
-//}
+
+#Preview {
+    OnboardingView( switchView:{} )
+        .environmentObject(SelectedMunicipio())
+}

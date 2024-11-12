@@ -16,12 +16,11 @@ struct cambiaApp: App {
         WindowGroup {
             if viewIndex == 0 {
                 OnboardingView(switchView: switchView)
-                    .environmentObject(settings)
             } else {
                 ContentView()
-                    .environmentObject(settings) 
             }
         }
+        .environmentObject(settings)
     }
     
     func switchView() {

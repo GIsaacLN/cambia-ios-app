@@ -87,6 +87,16 @@ struct MapView: View {
             }
             .preferredColorScheme(.dark)
         }
+        .task {
+            do {
+                // Simulate an asynchronous task
+                if let municipio = settings.selectedMunicipio {
+                    viewModel.updateLayersForMunicipio(municipio)
+                    viewModel.selectedMunicipio = municipio
+                    viewModel.recenter(to: municipio)
+                }
+            }
+        }
         .onChange(of: settings.selectedMunicipio?.clave) {
             if let municipio = settings.selectedMunicipio {
                 viewModel.updateLayersForMunicipio(municipio)

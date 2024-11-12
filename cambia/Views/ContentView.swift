@@ -43,8 +43,8 @@ struct ContentView: View {
                         .onAppear {
                             if let municipio = settings.selectedMunicipio {
                                 mapViewModel.displayMunicipioGeometry(municipio)
-                                mapViewModel.recenter(to: municipio)
-                            }
+                                metricsViewModel.updateMetricsForMunicipio(municipio: municipio)
+                                }
                         }
                         .onChange(of: settings.selectedMunicipio?.clave) {
                             if let municipio = settings.selectedMunicipio {
@@ -114,4 +114,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(SelectedMunicipio())
 }
