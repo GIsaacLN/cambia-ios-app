@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var searchText: String = ""
     @State private var filteredMunicipios: [Municipio] = []
     @State private var municipios: [Municipio] = []
+    @State private var isOnboardingPresented: Bool = true // Controls when the sheet is shown
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,10 @@ struct ContentView: View {
                         .padding()
                         .font(.title)
                         .bold()
+                        .redacted(reason: settings.selectedMunicipio == nil ? .placeholder : [])
+                        .overlay(
+                            settings.selectedMunicipio == nil ? Shimmer().mask(Text(settings.selectedMunicipio?.displayFullName ?? "Selecciona un Municipio").font(.title).fontWeight(.bold)) : nil
+                        )
 
                     TabView {
                         Tab("Métricas", systemImage: "play") {
@@ -65,6 +70,10 @@ struct ContentView: View {
             }
             .environmentObject(mapViewModel)
             .environmentObject(metricsViewModel)
+            .sheet(isPresented: $isOnboardingPresented) {
+                OnboardingView(switchView: { isOnboardingPresented = false })
+                    .interactiveDismissDisabled()
+            }
 
         }
     }

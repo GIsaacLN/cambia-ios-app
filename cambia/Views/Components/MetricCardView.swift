@@ -15,7 +15,8 @@ struct MetricCardView: View {
     var iconColor: Color = .teal
     var footer: String?
     var isLoading: Bool
-    
+    @EnvironmentObject var settings: SelectedMunicipio
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -28,15 +29,15 @@ struct MetricCardView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    if isLoading {
-                        ProgressView()
-                    } else {
-                        Text(value)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                    }
-                    
+                    Text(value)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                        .redacted(reason: isLoading || settings.selectedMunicipio == nil ? .placeholder : [])
+                        .overlay(
+                            isLoading || settings.selectedMunicipio == nil ? Shimmer().mask(Text(value).font(.title).fontWeight(.bold)) : nil
+                        )
+
                 }
                 .padding(.leading, 8)
                 
@@ -66,7 +67,7 @@ struct MetricCardView: View {
             icon: Image(systemName: "bolt.fill"),
             isLoading: true
         )
-        
+        .environmentObject(SelectedMunicipio())
         // Metric Card with custom color and footer text
         MetricCardView(
             title: "Hospital más cercano",
@@ -76,6 +77,7 @@ struct MetricCardView: View {
             footer: "Tiempo de desplazamiento: 15 minutos\nNo. en un radio de 5 km: 1 hospital",
             isLoading: false
         )
+        .environmentObject(SelectedMunicipio())
     }
     .padding()
     .preferredColorScheme(.dark)
