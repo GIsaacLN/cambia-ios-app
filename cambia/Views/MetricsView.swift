@@ -91,6 +91,9 @@ struct MetricsView: View {
                         }
                     }
                 }
+                .onAppear {
+                    loadData()
+                }
                 .onChange(of: settings.selectedMunicipio?.clave) {
                     loadData()
                 }

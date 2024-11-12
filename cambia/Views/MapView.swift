@@ -87,6 +87,16 @@ struct MapView: View {
             }
             .preferredColorScheme(.dark)
         }
+        .task {
+            do {
+                // Simulate an asynchronous task
+                if let municipio = settings.selectedMunicipio {
+                    viewModel.updateLayersForMunicipio(municipio)
+                    viewModel.selectedMunicipio = municipio
+                    viewModel.recenter(to: municipio)
+                }
+            }
+        }
         .onChange(of: settings.selectedMunicipio?.clave) {
             if let municipio = settings.selectedMunicipio {
                 viewModel.updateLayersForMunicipio(municipio)
@@ -139,7 +149,7 @@ struct LayerSelectionView: View {
                         HStack {
                             if viewModel.selectedLayers.contains(layer) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.cyan)
+                                    .foregroundColor(.teal)
                                     .padding(.trailing)
                             } else {
                                 Image(systemName: "circle")

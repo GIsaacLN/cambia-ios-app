@@ -9,6 +9,4 @@ import Foundation
 
 class SelectedMunicipio: ObservableObject {
     @Published var selectedMunicipio: Municipio?
-    
-    
 }
