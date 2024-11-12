@@ -17,6 +17,8 @@ struct OnboardingView: View {
     @State private var municipios: [Municipio] = []
     @State private var groupedMunicipiosByState: [(key: String, municipios: [Municipio])] = []
     
+    @State var selectedMunicipioOnboarding: Municipio?
+    
     var switchView: () -> Void
     
     var body: some View {
@@ -24,48 +26,49 @@ struct OnboardingView: View {
             Color.gray5.ignoresSafeArea()
             
             VStack {
-                Spacer() // Center content vertically
+                Spacer()
                 VStack(spacing: 5) {
                     header
                     municipiosList
                 }
-                .padding(.horizontal, 20)
                 exploreButton
                 Spacer()
             }
-            .padding(.horizontal, 40)
             .ignoresSafeArea(.keyboard)
         }
         .onAppear {
             loadData()
             performSearchOperations()
         }
+        .navigationBarBackButtonHidden()
+        .navigationTitle("Selecciona tu Municipio")
+        .preferredColorScheme(.dark)
+        .navigationBarItems(trailing: Button("Cerrar") { switchView() })
     }
     
     private var header: some View {
-        HStack (alignment: .top, spacing: 80) {
+        VStack {
             welcomeText
-                        
             OnboardingSearchBarView(isSearchActive: $isSearchActive, searchText: $searchText, filteredMunicipios: $filteredMunicipios)
                 .onChange(of: searchText) { performSearchOperations() }
                 .frame(maxWidth: .infinity) // Allow full width
         }
     }
-
+    
     private var welcomeText: some View {
-        VStack(alignment: .leading, spacing: 15){
+        VStack(alignment: .center, spacing: 15){
             Text("Bienvenido a Cambia")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundStyle(.white)
             
-            Text("Selecciona un municipio y comienza de inmediato")
+            Text("Selecciona tu Municipio")
                 .font(.title2)
                 .foregroundStyle(.white)
         }
         .padding()
     }
-
+    
     private var municipiosList: some View {
         VStack {
             if !groupedMunicipiosByState.isEmpty {
@@ -86,17 +89,17 @@ struct OnboardingView: View {
             }
         }
     }
-
+    
     private func municipioRows(_ municipios: [Municipio]) -> some View {
         ForEach(municipios, id: \.id) { municipio in
             Button {
-                settings.selectedMunicipio = municipio
+                self.selectedMunicipioOnboarding = municipio
                 searchText = ""
                 isSearchActive = false
             } label: {
                 HStack {
-                    Image(systemName: municipio.displayFullName == settings.selectedMunicipio?.displayFullName ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(municipio.displayFullName == settings.selectedMunicipio?.displayFullName ? .teal : .white)
+                    Image(systemName: municipio.displayFullName == selectedMunicipioOnboarding?.displayFullName ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(municipio.displayFullName == selectedMunicipioOnboarding?.displayFullName ? .teal : .white)
                         .padding(.horizontal)
                     Text(municipio.displayFullName)
                         .foregroundStyle(.white)
@@ -109,23 +112,24 @@ struct OnboardingView: View {
     
     private var exploreButton: some View {
         Button {
+            settings.selectedMunicipio = selectedMunicipioOnboarding
             settings.updateMunicipio(newMunicipio: settings.selectedMunicipio!)
             switchView()
         } label: {
-            Text("Seleccionar \(settings.selectedMunicipio?.displayFullName ?? "")")
-                .bold()
+            Text("Seleccionar")
+                .fontWeight(.bold)
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.teal.opacity(0.85))
                 .foregroundColor(.white)
-                .cornerRadius(10)
-                .shadow(radius: 4) // Adds depth
         }
+        .buttonStyle(.borderedProminent)
+        .tint(.teal)
+        .cornerRadius(10)
         .padding()
-        .disabled(((settings.selectedMunicipio?.displayFullName.isEmpty) == nil))
+        .disabled(selectedMunicipioOnboarding == nil)
     }
-
+    
     
     private func performSearchOperations() {
         filterMunicipios()
