@@ -10,8 +10,8 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var settings: SelectedMunicipio
+    @FocusState var isTextFieldFocused: Bool
     
-    @State private var isSearchActive: Bool = false
     @State private var searchText: String = ""
     @State private var filteredMunicipios: [Municipio] = []
     @State private var municipios: [Municipio] = []
@@ -49,7 +49,8 @@ struct OnboardingView: View {
     private var header: some View {
         VStack {
             welcomeText
-            OnboardingSearchBarView(isSearchActive: $isSearchActive, searchText: $searchText, filteredMunicipios: $filteredMunicipios)
+            
+            OnboardingSearchBarView
                 .onChange(of: searchText) { performSearchOperations() }
                 .frame(maxWidth: .infinity) // Allow full width
         }
@@ -66,6 +67,36 @@ struct OnboardingView: View {
                 .font(.title2)
                 .foregroundStyle(.white)
         }
+        .padding()
+    }
+    
+    private var OnboardingSearchBarView: some View {
+        VStack(alignment: .leading) {
+            ZStack{
+                ZStack {
+                    Color.gray6.opacity(0.7)
+                        .cornerRadius(10)
+                    HStack {
+                        TextField("\(Image(systemName: "magnifyingglass"))  Buscar Municipio", text: $searchText)
+                            .focused($isTextFieldFocused)
+                            .padding(.horizontal)
+                            .foregroundStyle(.white)
+                            .preferredColorScheme(.dark)
+                        
+                        if searchText != "" && !searchText.isEmpty{
+                            Button("Cancel") {
+                                searchText = ""
+                                isTextFieldFocused = false
+                            }
+                            .foregroundStyle(Color.teal)
+                        }
+                    }
+                    .padding()
+                }
+                .padding()
+            }
+        }
+        .frame(maxHeight: 40)
         .padding()
     }
     
@@ -94,8 +125,7 @@ struct OnboardingView: View {
         ForEach(municipios, id: \.id) { municipio in
             Button {
                 self.selectedMunicipioOnboarding = municipio
-                searchText = ""
-                isSearchActive = false
+                isTextFieldFocused = false
             } label: {
                 HStack {
                     Image(systemName: municipio.displayFullName == selectedMunicipioOnboarding?.displayFullName ? "checkmark.circle.fill" : "circle")
@@ -157,7 +187,8 @@ struct OnboardingView: View {
                     populationVulnerability: properties.iviPob20,
                     vulnerabilityIndex: properties.iviVulne,
                     floodHazardLevel: properties.peligroIn,
-                    threshold12h: properties.umbral12h
+                    threshold12h: properties.umbral12h,
+                    porcentajeInundado: properties.porcentaje
                 )
             }
         } catch {
@@ -184,41 +215,6 @@ struct OnboardingView: View {
         }
     }
 }
-
-struct OnboardingSearchBarView: View {
-    @Binding var isSearchActive: Bool
-    @Binding var searchText: String
-    @Binding var filteredMunicipios: [Municipio]
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            ZStack{
-                ZStack {
-                    Color.gray6.opacity(0.7)
-                        .cornerRadius(10)
-                    HStack {
-                        TextField("\(Image(systemName: "magnifyingglass"))  Buscar Municipio", text: $searchText)
-                            .padding(.horizontal)
-                            .foregroundStyle(.white)
-                            .preferredColorScheme(.dark)
-                        
-                        if searchText != "" && !searchText.isEmpty{
-                            Button("Cancel") {
-                                searchText = ""
-                            }
-                            .foregroundStyle(Color.teal)
-                        }
-                    }
-                    .padding()
-                }
-                .padding()
-            }
-        }
-        .frame(maxHeight: 40)
-        .padding()
-    }
-}
-
 extension SelectedMunicipio {
     func updateMunicipio(newMunicipio: Municipio) {
         selectedMunicipio = newMunicipio

@@ -4,9 +4,11 @@ import Charts
 struct AnalysisView: View {
     @EnvironmentObject var metricsViewModel: MetricsViewModel
     @EnvironmentObject var settings: SelectedMunicipio
+    
     @State var oberlayDataServivios: Bool = false
     @State var showDistribucionOverlay: Bool = false
     @State var ShowPrediccióndeInundación: Bool = true
+    @State var predictionText: String = "Cargando datos..."
     
     var body: some View {
         NavigationStack {
@@ -36,10 +38,12 @@ struct AnalysisView: View {
                                         .font(.system(size: 40))
                                         .foregroundColor(riskColor.opacity(0.8))
                                     Spacer()
+                                    
                                     Text(metricsViewModel.floodRiskPrediction)
                                         .font(.headline)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
+                                    
                                     Button {
                                         ShowPrediccióndeInundación.toggle()
                                     } label: {
@@ -88,11 +92,17 @@ struct AnalysisView: View {
             }
         }
         .onAppear {
-            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
+            updatePrediction()
         }
-        .onChange (of: settings.selectedMunicipio?.clave) {
-            metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
+        .onChange(of: settings.selectedMunicipio?.clave) {
+            updatePrediction()
         }
+    }
+    
+    // Helper function to handle prediction updates
+    private func updatePrediction() {
+        metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
+        predictionText = metricsViewModel.floodRiskPrediction
     }
     
     // Computed property para obtener el color según el nivel de riesgo
@@ -112,7 +122,7 @@ struct AnalysisView: View {
             return .gray.opacity(0.2)
         }
     }
-
+    
     // Computed property para obtener el ícono según el nivel de riesgo
     private var riskIcon: String {
         switch metricsViewModel.floodRiskPrediction {
@@ -124,12 +134,12 @@ struct AnalysisView: View {
             return "questionmark.circle.fill"
         }
     }
-
+    
     func GraficaServiciosBasicos() -> some View {
         VStack {
-           Text("Servicios Básicos")
-            .font(.subheadline)
-            .foregroundColor(.secondary)
+            Text("Servicios Básicos")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
             Chart {
                 BarMark(
                     x: .value("Servicio", "Hospitales"),
@@ -161,7 +171,7 @@ struct AnalysisView: View {
                         Text("HOSPITALES")
                             .font(.caption2)
                             .foregroundStyle(.white,.opacity(50))
-
+                        
                         Text(serviceDescription(for:"Hospitales"))
                             .font(.body)
                             .multilineTextAlignment(.leading)
@@ -176,7 +186,7 @@ struct AnalysisView: View {
                         Text("BOMBEROS")
                             .font(.caption2)
                             .foregroundStyle(.white,.opacity(50))
-
+                        
                         Text(serviceDescription(for:"Bomberos"))
                             .font(.body)
                             .multilineTextAlignment(.leading)
@@ -202,54 +212,54 @@ struct AnalysisView: View {
     func GraficaDistribucionViviendas() -> some View {
         let viviendaData = [
             ("Electricidad", metricsViewModel.inegiData?.indicators["viviendasConElectricidad"]),
-                    ("Agua", metricsViewModel.inegiData?.indicators["viviendasConAgua"] ?? 0)
-                ]
-                
-                return VStack {
-                    Text("Distribución de Viviendas")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Chart(viviendaData, id: \.0) { data in
-                        BarMark(
-                            x: .value("Tipo", data.0),
-                            y: .value("Porcentaje", data.1 ?? 0)
-                        )
-                        .foregroundStyle(by: .value("Tipo", data.0))
+            ("Agua", metricsViewModel.inegiData?.indicators["viviendasConAgua"] ?? 0)
+        ]
+        
+        return VStack {
+            Text("Distribución de Viviendas")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Chart(viviendaData, id: \.0) { data in
+                BarMark(
+                    x: .value("Tipo", data.0),
+                    y: .value("Porcentaje", data.1 ?? 0)
+                )
+                .foregroundStyle(by: .value("Tipo", data.0))
+            }
+            .frame(width: 250, height: 250)
+            .onTapGesture {
+                showDistribucionOverlay.toggle()
+            }
+            .overlay {
+                if showDistribucionOverlay {
+                    VStack(alignment: .leading) {
+                        Text("Interpretación:")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                        Text(viviendasDescription())
                     }
-                    .frame(width: 250, height: 250)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
                     .onTapGesture {
                         showDistribucionOverlay.toggle()
                     }
-                    .overlay {
-                        if showDistribucionOverlay {
-                            VStack(alignment: .leading) {
-                                Text("Interpretación:")
-                                    .font(.headline)
-                                    .padding(.bottom, 5)
-                                Text(viviendasDescription())
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(10)
-                            .shadow(radius: 5)
-                            .onTapGesture {
-                                showDistribucionOverlay.toggle()
-                            }
-                        }
-                    }
                 }
-                .padding()
             }
+        }
+        .padding()
+    }
     
     private func serviceDescription(for service: String) -> String {
         guard let population = metricsViewModel.inegiData?.indicators["poblacionTotal"] else {
             return "Datos de población no disponibles."
         }
-
+        
         let serviceCount: Int
         let description: String
-
+        
         switch service {
         case "Hospitales":
             serviceCount = metricsViewModel.totalHospitalsInMunicipio
@@ -263,7 +273,7 @@ struct AnalysisView: View {
         default:
             description = "Datos no disponibles para este servicio."
         }
-
+        
         return description
     }
     
@@ -277,8 +287,8 @@ struct AnalysisView: View {
         En este municipio, el \(String(format: "%.2f", electricidad))% de las viviendas tienen acceso a electricidad y el \(String(format: "%.2f", agua))% tienen acceso a agua potable. 
         """
     }
-
 }
+
 
 // Componentes de UI reutilizables
 struct MetricRow: View {
