@@ -149,7 +149,7 @@ struct LayerSelectionView: View {
                         HStack {
                             if viewModel.selectedLayers.contains(layer) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.cyan)
+                                    .foregroundColor(.teal)
                                     .padding(.trailing)
                             } else {
                                 Image(systemName: "circle")

@@ -1,5 +1,5 @@
 //
-//  OnboradingView.swift
+//  OnboardingView.swift
 //  cambia
 //
 //  Created by Arantza Castro Dessavre on 10/11/24.
@@ -24,12 +24,16 @@ struct OnboardingView: View {
             Color.gray5.ignoresSafeArea()
             
             VStack {
-                header
-                    .padding()
-                municipiosList
-                    .padding(.horizontal)
+                Spacer() // Center content vertically
+                VStack(spacing: 5) {
+                    header
+                    municipiosList
+                }
+                .padding(.horizontal, 20)
                 exploreButton
+                Spacer()
             }
+            .padding(.horizontal, 40)
             .ignoresSafeArea(.keyboard)
         }
         .onAppear {
@@ -39,41 +43,38 @@ struct OnboardingView: View {
     }
     
     private var header: some View {
-        HStack{
+        HStack (alignment: .top, spacing: 80) {
             welcomeText
-            
-            Spacer()
-            
-            OnboardingSearchhBarView(isSearchActive: $isSearchActive, searchText: $searchText, filteredMunicipios: $filteredMunicipios)
-                .onChange(of: searchText) {
-                    performSearchOperations()
-                }
+                        
+            OnboardingSearchBarView(isSearchActive: $isSearchActive, searchText: $searchText, filteredMunicipios: $filteredMunicipios)
+                .onChange(of: searchText) { performSearchOperations() }
+                .frame(maxWidth: .infinity) // Allow full width
         }
     }
-    
+
     private var welcomeText: some View {
-        VStack(alignment: .leading, spacing: 10){
+        VStack(alignment: .leading, spacing: 15){
             Text("Bienvenido a Cambia")
-                .font(.title)
+                .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundStyle(.white)
             
-            Text("¡Selecciona un municipio y comienza a explorar de inmediato!")
-                .font(.title)
+            Text("Selecciona un municipio y comienza de inmediato")
+                .font(.title2)
                 .foregroundStyle(.white)
         }
         .padding()
     }
-    
+
     private var municipiosList: some View {
-        VStack{
+        VStack {
             if !groupedMunicipiosByState.isEmpty {
                 List {
                     ForEach(groupedMunicipiosByState, id: \.0) { (state, municipios) in
-                        Section(header: Text(state).font(.headline)) {
+                        Section(header: Text(state).font(.title3).fontWeight(.bold)) {
                             municipioRows(municipios)
+                                .padding(.vertical, 8)
                         }
-                        .padding()
                     }
                 }
                 .background(Color("gray5"))
@@ -81,10 +82,11 @@ struct OnboardingView: View {
                 .padding(.vertical)
             } else {
                 Text("No se encontraron resultados.")
+                    .padding()
             }
         }
     }
-    
+
     private func municipioRows(_ municipios: [Municipio]) -> some View {
         ForEach(municipios, id: \.id) { municipio in
             Button {
@@ -94,10 +96,11 @@ struct OnboardingView: View {
             } label: {
                 HStack {
                     Image(systemName: municipio.displayFullName == settings.selectedMunicipio?.displayFullName ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(municipio.displayFullName == settings.selectedMunicipio?.displayFullName ? .cyan : .white)
+                        .foregroundStyle(municipio.displayFullName == settings.selectedMunicipio?.displayFullName ? .teal : .white)
                         .padding(.horizontal)
                     Text(municipio.displayFullName)
                         .foregroundStyle(.white)
+                    Spacer()
                 }
             }
         }
@@ -109,13 +112,20 @@ struct OnboardingView: View {
             settings.updateMunicipio(newMunicipio: settings.selectedMunicipio!)
             switchView()
         } label: {
-            Text("Explorar \(settings.selectedMunicipio?.displayFullName ?? "")")
+            Text("Seleccionar \(settings.selectedMunicipio?.displayFullName ?? "")")
+                .bold()
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.teal.opacity(0.85))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .shadow(radius: 4) // Adds depth
         }
-        .tint(.cyan)
         .padding()
         .disabled(((settings.selectedMunicipio?.displayFullName.isEmpty) == nil))
     }
-    
+
     
     private func performSearchOperations() {
         filterMunicipios()
@@ -171,7 +181,7 @@ struct OnboardingView: View {
     }
 }
 
-struct OnboardingSearchhBarView: View {
+struct OnboardingSearchBarView: View {
     @Binding var isSearchActive: Bool
     @Binding var searchText: String
     @Binding var filteredMunicipios: [Municipio]
@@ -181,7 +191,7 @@ struct OnboardingSearchhBarView: View {
             ZStack{
                 ZStack {
                     Color.gray6.opacity(0.7)
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                     HStack {
                         TextField("\(Image(systemName: "magnifyingglass"))  Buscar Municipio", text: $searchText)
                             .padding(.horizontal)
@@ -197,11 +207,11 @@ struct OnboardingSearchhBarView: View {
                     }
                     .padding()
                 }
-                .frame(width: 300, height: 30)
                 .padding()
             }
         }
-        .frame(maxHeight: 60)
+        .frame(maxHeight: 40)
+        .padding()
     }
 }
 
