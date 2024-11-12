@@ -10,76 +10,82 @@ struct AnalysisView: View {
     
     var body: some View {
         NavigationStack {
-           // ScrollView{
-                VStack(alignment: .leading, spacing: 20) {
-                    
-                    Text("Análisis de Riesgo de Inundación")
-                        .font(.subheadline)
-                        .fontWeight(.bold)
-                    
-                    // Predicción de Riesgo de Inundación
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Predicción de Inundación")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
+            ZStack{
+                Color.gray5.ignoresSafeArea()
+                
+                ScrollView{
+                    VStack(alignment: .leading, spacing: 20) {
                         
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(riskColor)
-                                .frame(height: 80)
-                            
-                            HStack {
-                                Image(systemName: riskIcon)
-                                    .font(.system(size: 40))
-                                    .foregroundColor(riskColor.opacity(0.8))
-                                Spacer()
-                                Text(metricsViewModel.floodRiskPrediction)
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.white)
-                                Button {
-                                    ShowPrediccióndeInundación.toggle()
-                                } label: {
-                                    Image(systemName: "info.circle")
-                                        .foregroundStyle(.teal)
-                                }.padding()
-                                    
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                   
-                    if ShowPrediccióndeInundación{
-                        Divider().background(Color.gray.opacity(0.3))
+                        Text("Análisis de Riesgo de Inundación")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
                         
-                        // Información de las métricas
+                        // Predicción de Riesgo de Inundación
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Detalles del Análisis")
-                                .font(.headline)
+                            Text("Predicción de Inundación")
+                                .font(.caption)
                                 .foregroundColor(.white.opacity(0.7))
                             
-                            MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
-                            MetricRow(title: "Área Inundada", value: settings.selectedMunicipio?.inundatedArea.map() { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
-                            MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
-                            MetricRow(title: "Distancia promedio al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.averageHospitalDistance)) km")
-                            MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.totalHospitalsInMunicipio)")
-                            MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", settings.selectedMunicipio?.cityArea ?? 0)) Km²")
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(riskColor)
+                                    .frame(height: 80)
+                                
+                                HStack {
+                                    Image(systemName: riskIcon)
+                                        .font(.system(size: 40))
+                                        .foregroundColor(riskColor.opacity(0.8))
+                                    Spacer()
+                                    Text(metricsViewModel.floodRiskPrediction)
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white)
+                                    Button {
+                                        ShowPrediccióndeInundación.toggle()
+                                    } label: {
+                                        Image(systemName: "info.circle")
+                                            .foregroundStyle(.teal)
+                                    }.padding()
+                                    
+                                }
+                                .padding(.horizontal)
+                            }
                         }
-                    }
-                    
-                    HStack{
-                        GraficaServiciosBasicos()
+                        
+                        if ShowPrediccióndeInundación{
+                            Divider().background(Color.gray.opacity(0.3))
+                            
+                            // Información de las métricas
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Detalles del Análisis")
+                                    .font(.headline)
+                                    .foregroundColor(.white.opacity(0.7))
+                                
+                                MetricRow(title: "Densidad Poblacional", value: metricsViewModel.inegiData?.indicators["densidad"].map { "\(Int($0)) Hab/Km²" } ?? "No disponible")
+                                MetricRow(title: "Área Inundada", value: settings.selectedMunicipio?.inundatedArea.map() { "\(String(format: "%.2f", $0)) Km²" } ?? "No disponible")
+                                MetricRow(title: "Precipitación Anual", value: "\(Int(metricsViewModel.annualPrecipitation ?? 0)) mm")
+                                MetricRow(title: "Distancia promedio al Hospital más cercano", value: "\(String(format: "%.2f", metricsViewModel.averageHospitalDistance)) km")
+                                MetricRow(title: "Número de Hospitales en un radio de 10 km", value: "\(metricsViewModel.totalHospitalsInMunicipio)")
+                                MetricRow(title: "Área Total de la Ciudad", value: "\(String(format: "%.2f", settings.selectedMunicipio?.cityArea ?? 0)) Km²")
+                            }
+                        }
+                        ScrollView (.horizontal){
+                            HStack{
+                                GraficaServiciosBasicos()
+                                    .padding()
+                                GraficaDistribucionViviendas()
+                                    .padding()
+                            }
                             .padding()
-                        GraficaDistribucionViviendas()
-                            .padding()
+                        }
+                        Spacer()
+                        
                     }
                     .padding()
-                    Spacer()
-                    
+                    .background(Color.gray5.edgesIgnoringSafeArea(.all))
                 }
-                .padding()
-                .background(Color.gray5.edgesIgnoringSafeArea(.all))
-            //}
+                .preferredColorScheme(.dark)
+            }
         }
         .onAppear {
             metricsViewModel.performPrediction(selectedMunicipio: settings.selectedMunicipio)
@@ -299,4 +305,5 @@ struct MetricRow: View {
 #Preview{
     AnalysisView()
         .environmentObject(MetricsViewModel())
+        .environmentObject(SelectedMunicipio())
 }
